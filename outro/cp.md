@@ -2,6 +2,7 @@
 layout: page
 title: Campus Party
 permalink: /outro/cp/
+exclude: true
 ---
 ### Apostilas ###
 Frequentemente, recebo pedidos do material do meu curso de élfico nas Campus Party 2015 & 2016. 
