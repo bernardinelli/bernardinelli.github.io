@@ -8,7 +8,7 @@
 <div class="wrapper">
   <div class="trigger site-navigation">
     {% for sitePage in site.pages %}
-      {% unless page.exclude %}
+      {% unless sitePage.exclude %}
         {% if sitePage.title %}
 
            <a class="page-link" href="{{sitePage.url | prepend: site.baseurl }}">{{sitePage.title}}</a><span class="exclamationMark">/</span>
