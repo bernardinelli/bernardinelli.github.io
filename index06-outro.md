@@ -5,4 +5,4 @@ permalink: /outro/
 ---
 
 ### Campus Party 2015 & 2016 ###
-[Listagem](http://bernardinelli.org/outro/cp.md)
+[Listagem](http://bernardinelli.org/outro/cp)
