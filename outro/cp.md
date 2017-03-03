@@ -10,10 +10,15 @@ Aqui, colocarei a versão de 2016 deste material, tendo tanto o curso básico (i
 Além disso, incluirei o material das minhas palestras tanto na Hobbitcon 2013 e na Nazgûlcon 2014 sobre temas relacionados. 
 Peço que respeitem a minha autoria deste material, principalmente na hora de redistribuir estes arquivos. 
 Infelizmente, já vi esse material em sites de vendas de apostilas sem a minha permissão. 
+
 [Curso Básico](http://bernardinelli.org/downloads/Mod_1.pdf)
+
 [Curso Avançado](http://bernardinelli.org/downloads/Mod_2.pdf)
+
 [Hobbitcon 2013](http://bernardinelli.org/downloads/hobbitcon.pdf)
+
 [Nazgûlcon 2014](http://bernardinelli.org/downloads/nazgulcon.pdf)
+
 
 Recomendo também o [Quenya101](http://quenya101.com) para informações mais avançadas e detalhadas sobre este assunto.
 Se precisar entrar em contato comigo, use [este](mailto:ondo@quenya101.com) e-mail. 
