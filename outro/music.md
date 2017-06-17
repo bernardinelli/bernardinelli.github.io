@@ -5,7 +5,6 @@ permalink: /outro/music/
 exclude: true
 ---
 
-# Músicas
 ## Cerimônia
 - _Entrada Pais e Padrinhos:_ Wardruna - Odal (<https://www.youtube.com/watch?v=pCao3w068Ww>)
 - _Entrada Pedro:_ Jeremy Soule - Sovngarde (<https://www.youtube.com/watch?v=VBPwCmU0V-Q>)
@@ -20,5 +19,5 @@ exclude: true
 - _Bomba_: Heidevolk - Vulgaris Magistralis (<https://www.youtube.com/watch?v=reOLeLX0Q9U> comecando em 0:15)
 
 
-##Valsa:
+## Valsa:
  - _Valsa_: Sonata Arctica - Love (<https://www.youtube.com/watch?v=qBACRtmu0VQ>)
