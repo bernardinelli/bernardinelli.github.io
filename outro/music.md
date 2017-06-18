@@ -21,3 +21,8 @@ exclude: true
 
 ## Valsa:
  - _Valsa_: Sonata Arctica - Love (<https://www.youtube.com/watch?v=qBACRtmu0VQ>)
+
+## Playlists:
+- _Músicas de Fundo_ <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/5NUkoukZu0QqQmIO0e6wgO>
+- _Jantar_: <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/36xjUQRjiQksnjgSZXsDxt>
+- _Baladinha_: <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/5NUkoukZu0QqQmIO0e6wgO>
