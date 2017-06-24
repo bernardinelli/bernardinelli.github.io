@@ -14,17 +14,17 @@ exclude: true
 - _Saída:_ Blind Guardian - Wheel of Time (Orchestral) (<https://www.youtube.com/watch?v=7mglnSQ3o8c>)
 
 
-## Outro:
+## Outro
 - _Brinde_: London Philharmonic Orchestra - La Traviata (<https://www.youtube.com/watch?v=UZvgmpiQCcI> começando em 1:59)
 - _Buquê_: Avantasia - Mystery of a Blood Red Rose (<https://www.youtube.com/watch?v=4w_58CQWHFQ>)
 - _Bomba_: Heidevolk - Vulgaris Magistralis (<https://www.youtube.com/watch?v=reOLeLX0Q9U> comecando em 0:15)
 
 
-## Valsa:
+## Valsa
  - _Valsa_: Sonata Arctica - Love (<https://www.youtube.com/watch?v=qBACRtmu0VQ>)
  
  
- ## Playlists: 
+## Playlists
 - _Músicas de Fundo_: <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/6M8ZzEnCl22EznkxENMF7T>
 - _Jantar_: <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/36xjUQRjiQksnjgSZXsDxt>
 - _Baladinha_: <https://open.spotify.com/user/22at2q4ohvny3ke5v6jzzwswy/playlist/5NUkoukZu0QqQmIO0e6wgO>
