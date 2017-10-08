@@ -1,0 +1,345 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>run_scr &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>run_scr</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for run_scr</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">*Author: Pedro Bernardinelli*</span>
+
+<span class="sd">*Original: April 19, 2017 - Current: June 1, 2017*</span>
+
+<span class="sd">Little script to run everything done so far but the query. It opens a .fits file fresh from DESDM, applies Gary&#39;s astrometric solutions, runs a FoF and, finally, returns a .FITS file with a bunch of new information:</span>
+<span class="sd">	- NEW_RA    : RA after astrometric solution</span>
+<span class="sd">	- NEW_DEC   : DEC after astrometric solution</span>
+<span class="sd">	- X_GNOM    : x gnomonic coordinate centered on RA_0, DEC_0</span>
+<span class="sd">	- Y_GNOM    : y gnomonic coordinate centered on RA_0, DEC_0</span>
+<span class="sd">	- PROJ_FLAG : identifier for the astrometric solutions. 0 if there&#39;s one, 1 if there wasn&#39;t one</span>
+<span class="sd">	- MATCH_ID  : group of points returned by FoF for a given [linking] length </span>
+
+<span class="sd">This also merges the COADD catalog with the FINALCUT one. We can also run the query from this file, which is convenient. This is the &quot;control panel&quot; of the whole program. </span>
+
+<span class="sd">May 20, 2017:</span>
+<span class="sd">Changed the way distance scales on the gnomonic projection are used. </span>
+
+<span class="sd">June 1, 2017:</span>
+<span class="sd">Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1">#import sys</span>
+<span class="kn">import</span> <span class="nn">projections</span> <span class="k">as</span> <span class="nn">pr</span>
+<span class="kn">import</span> <span class="nn">friends_of_friends</span> <span class="k">as</span> <span class="nn">fof</span>
+<span class="kn">import</span> <span class="nn">data_management</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">import</span> <span class="nn">linearfit</span> <span class="k">as</span> <span class="nn">lf</span> 
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">query</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">import</span> <span class="nn">easyaccess</span> <span class="k">as</span> <span class="nn">ea</span> 
+
+<span class="n">folder</span> <span class="o">=</span> <span class="s2">&quot;/home/pedro/Documents/DES/&quot;</span>
+
+
+<div class="viewcode-block" id="run_fof"><a class="viewcode-back" href="../index.html#run_scr.run_fof">[docs]</a><span class="k">def</span> <span class="nf">run_fof</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Copies the gnomonic coordinates, runs the friends of friends and returns a catalog with the added MATCH_ID</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">data</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">copy_data_gnom</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+	<span class="n">friends_list</span> <span class="o">=</span> <span class="n">fof</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="n">l</span><span class="p">)</span>
+	<span class="n">dm</span><span class="o">.</span><span class="n">add_group_information</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="n">friends_list</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../index.html#run_scr.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">zone_file</span><span class="p">,</span> <span class="n">finalcut_file</span><span class="p">,</span> <span class="n">coadd_file</span><span class="p">,</span> <span class="n">file_prefix</span><span class="p">,</span> <span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">	Runs the group matching pipeline, as follows:</span>
+
+<span class="sd">	1) Projects the catalogs to a gnomonic coordinate system centered around (RA_0, DEC_0)</span>
+
+<span class="sd">	2) First friends of friends, with catalog world coordinates</span>
+
+<span class="sd">	3) Finds the color for all coadd-matched objects. Assigns the average color of the catalog to the no-coadd matches</span>
+
+<span class="sd">	4) Projects the catalog for and re-calculates the world coordinates using Gary&#39;s astrometric solutions</span>
+
+<span class="sd">	5) Runs a second friends of friends, with these results as output</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		- zone_file (str): the zone WCS file for the astrometric solutions</span>
+<span class="sd">		- finalcut_file (str): the Finalcut/Single Epoch fits catalog coming from DESDM SQL</span>
+<span class="sd">		- coadd_file (str): the Coadd catalog from DESDM</span>
+<span class="sd">		- file_prefix (str): Prefix for the file to be saved (for example, the tilename)</span>
+<span class="sd">		- RA_0 (float): One of the coordinates for the gnomonic projection</span>
+<span class="sd">		- DEC_0 (float): The second center coordinates</span>
+<span class="sd">		- offset (int): Offset for the MATCH_ID</span>
+<span class="sd">		- nodes (int): number of cores for MP parallelization</span>
+<span class="sd">	</span>
+<span class="sd">	 &#39;&#39;&#39;</span>
+	<span class="nb">print</span> <span class="s1">&#39;Setting everything up&#39;</span>
+	<span class="n">l</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">one_arc_sec</span><span class="p">(</span><span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">)</span> <span class="c1">#defines the distance scale in our gnomonic projection</span>
+	<span class="n">dm</span><span class="o">.</span><span class="n">add_gnom</span><span class="p">(</span><span class="n">finalcut_file</span><span class="p">,</span> <span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">)</span> <span class="c1">#applies our gnomonic projection to the finalcut file</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="n">dm</span><span class="o">.</span><span class="n">coadd_gnomonic</span><span class="p">(</span><span class="n">coadd_file</span><span class="p">,</span> <span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">)</span> <span class="c1">#applies our gnomonic projection to the coadd file</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="n">dm</span><span class="o">.</span><span class="n">merge_tables</span><span class="p">(</span><span class="n">finalcut_file</span><span class="p">,</span> <span class="n">coadd_file</span><span class="p">,</span> <span class="n">file_prefix</span> <span class="o">+</span> <span class="s1">&#39;_merge.fits&#39;</span><span class="p">)</span> <span class="c1">#joins both finalcut and coadd</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="nb">print</span> <span class="s1">&#39;Friends of Friends #1&#39;</span>
+	<span class="n">run_fof</span><span class="p">(</span><span class="n">file_prefix</span> <span class="o">+</span> <span class="s1">&#39;_merge.fits&#39;</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="nb">print</span> <span class="s1">&#39;Adding the color for each detection&#39;</span>
+	<span class="n">lf</span><span class="o">.</span><span class="n">add_color</span><span class="p">(</span><span class="n">file_prefix</span> <span class="o">+</span> <span class="s1">&#39;_merge.fits&#39;</span><span class="p">,</span> <span class="n">file_prefix</span> <span class="o">+</span> <span class="s1">&#39;_merge.fits&#39;</span><span class="p">)</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="nb">print</span> <span class="s1">&#39;Applying the astrometric maps&#39;</span>
+	<span class="n">pr</span><span class="o">.</span><span class="n">project_catalog</span><span class="p">(</span><span class="n">zone_file</span><span class="p">,</span> <span class="n">file_prefix</span><span class="o">+</span><span class="s1">&#39;_merge.fits&#39;</span><span class="p">,</span> <span class="n">file_prefix</span><span class="o">+</span><span class="s1">&#39;_final.fits&#39;</span><span class="p">,</span> <span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">,</span> <span class="n">cores</span><span class="p">)</span> <span class="c1">#WCSFit/pixmappy astrometric solutions</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="nb">print</span> <span class="s1">&#39;Friends of Friends #2&#39;</span>
+
+	<span class="n">run_fof</span><span class="p">(</span><span class="n">file_prefix</span> <span class="o">+</span> <span class="s1">&#39;_final.fits&#39;</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="query_and_run"><a class="viewcode-back" href="../index.html#run_scr.query_and_run">[docs]</a><span class="k">def</span> <span class="nf">query_and_run</span><span class="p">(</span><span class="n">tilename</span><span class="p">,</span> <span class="n">save_folder</span><span class="p">,</span> <span class="n">zone</span><span class="p">,</span> <span class="n">zone_file</span><span class="p">,</span> <span class="n">nodes</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Executes both the coadd query for a given tilename and runs the whole friends of friends + projection pipeline</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="nb">print</span> <span class="s2">&quot;Starting the query&quot;</span>
+	<span class="n">conn</span> <span class="o">=</span> <span class="n">ea</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="c1">#connects to ea</span>
+	<span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+	<span class="nb">print</span> <span class="s2">&quot;Coadd query&quot;</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">query_coadd_tile</span><span class="p">(</span><span class="n">tilename</span><span class="p">,</span> <span class="n">cur</span><span class="p">)</span>
+	<span class="n">conn</span><span class="o">.</span><span class="n">query_and_save</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s1">&#39;_coadd.fits&#39;</span><span class="p">)</span>
+	<span class="n">coadd</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s1">&#39;_coadd.fits&#39;</span><span class="p">)</span>
+	<span class="n">ra_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">])</span>
+	<span class="n">ra_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">])</span>
+	<span class="n">dec_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span>
+	<span class="n">dec_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span>
+	<span class="nb">print</span> <span class="s2">&quot;Finalcut query&quot;</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">query_joint</span><span class="p">(</span><span class="n">ra_min</span><span class="p">,</span><span class="n">ra_max</span><span class="p">,</span> <span class="n">dec_min</span><span class="p">,</span> <span class="n">dec_max</span><span class="p">,</span> <span class="n">cur</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="n">zone</span><span class="p">)</span>
+	<span class="n">conn</span><span class="o">.</span><span class="n">query_and_save</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s1">&#39;_fc.fits&#39;</span><span class="p">)</span>	
+
+	<span class="n">run</span><span class="p">(</span><span class="n">zone_file</span><span class="p">,</span> <span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s1">&#39;_fc.fits&#39;</span><span class="p">,</span><span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s1">&#39;_coadd.fits&#39;</span><span class="p">,</span> <span class="n">save_folder</span><span class="o">+</span><span class="n">tilename</span><span class="p">,</span> <span class="p">(</span><span class="n">ra_min</span><span class="o">+</span><span class="n">ra_max</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">dec_max</span><span class="o">+</span><span class="n">dec_min</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">nodes</span><span class="p">)</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
+
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd"># This is the format for running on each tile of a zone, including the query. </span>
+<span class="sd">tiles = [&quot;DES0135-0416&quot;,&quot;DES0135-0458&quot;,&quot;DES0136-0541&quot;,&quot;DES0136-0624&quot;,&quot;DES0137-0707&quot;,&quot;DES0137-0250&quot;,&quot;DES0137-0333&quot;,&quot;DES0138-0416&quot;,&quot;DES0138-0458&quot;,&quot;DES0139-0541&quot;,&quot;DES0139-0624&quot;,&quot;DES0140-0250&quot;,&quot;DES0140-0707&quot;,</span>
+<span class="sd">		&quot;DES0140-0333&quot;,&quot;DES0140-0416&quot;,&quot;DES0141-0458&quot;,&quot;DES0141-0541&quot;,&quot;DES0142-0624&quot;,&quot;DES0143-0250&quot;,&quot;DES0143-0707&quot;,&quot;DES0143-0333&quot;,&quot;DES0143-0416&quot;,&quot;DES0144-0458&quot;,&quot;DES0144-0541&quot;,&quot;DES0145-0624&quot;,&quot;DES0146-0250&quot;,&quot;DES0146-0707&quot;,</span>
+<span class="sd">		&quot;DES0146-0333&quot;,&quot;DES0146-0416&quot;,&quot;DES0147-0458&quot;,&quot;DES0147-0541&quot;,&quot;DES0148-0624&quot;,&quot;DES0148-0250&quot;,&quot;DES0148-0707&quot;,&quot;DES0149-0333&quot;,&quot;DES0149-0416&quot;,&quot;DES0150-0458&quot;,&quot;DES0150-0541&quot;,&quot;DES0151-0624&quot;,&quot;DES0151-0250&quot;,&quot;DES0151-0707&quot;,</span>
+<span class="sd">		&quot;DES0152-0333&quot;,&quot;DES0152-0416&quot;,&quot;DES0152-0458&quot;,&quot;DES0153-0541&quot;,&quot;DES0154-0624&quot;,&quot;DES0154-0250&quot;,&quot;DES0154-0707&quot;]</span>
+
+<span class="sd">for i in tiles:</span>
+<span class="sd">	print i </span>
+<span class="sd">	query_and_run(i, folder+&#39;tiles/&#39;, &#39;29&#39;, folder+&#39;zone029.astro&#39;)&#39;&#39;&#39;</span>
+
+<span class="c1">#This is the format for running on a single finalcut + coadd pair</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">run(folder+&#39;zone029.astro&#39;, folder+&#39;zone29_finalcut.fits&#39;, folder+&#39;zone29_coadd.fits&#39;, folder+&#39;zone29_&#39;, RA_0, DEC_0, nodes)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

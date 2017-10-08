@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>query &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>query</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for query</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Pedro Bernardinelli</span>
+<span class="sd">Original: April 7, 2017</span>
+<span class="sd">Current: June 1, 2017</span>
+<span class="sd">Non-Jupyter version of the DESDM query for a given RA, DEC region, downloading information from multiple tables in the database.</span>
+<span class="sd">See &quot;DESDM_DB_QUERY&quot; Jupyter notebook for more details</span>
+<span class="sd">May 2, 2017:</span>
+<span class="sd">Added an analogous query for the coadd catalog, allowing us to search for the color of a given object. Still not sure if this is going to work the way I intend it to, but let&#39;s see.</span>
+
+<span class="sd">June 1, 2017:</span>
+<span class="sd">Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+
+<span class="kn">import</span> <span class="nn">easyaccess</span> <span class="k">as</span> <span class="nn">ea</span>
+<span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1">#sets a null connection</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span> 
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span> 
+
+<span class="n">conn</span> <span class="o">=</span> <span class="n">ea</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span> <span class="c1">#connects to ea</span>
+<span class="n">cur</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> 
+
+<span class="n">save_folder</span> <span class="o">=</span>  <span class="s2">&quot;/home/pedro/Documents/DES/zone29/&quot;</span>
+
+
+<div class="viewcode-block" id="query_joint"><a class="viewcode-back" href="../index.html#query.query_joint">[docs]</a><span class="k">def</span> <span class="nf">query_joint</span><span class="p">(</span><span class="n">RA_min</span><span class="p">,</span> <span class="n">RA_max</span><span class="p">,</span> <span class="n">DEC_min</span><span class="p">,</span> <span class="n">DEC_max</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">zonetable</span><span class="o">=</span><span class="s1">&#39;rbutler.zone_tiles@dessci&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; Performs a query for a given RA and DEC in the y3a1_finalcut_object,</span>
+<span class="sd">    downloading the extra needed information from other tables&#39;&#39;&#39;</span>
+    <span class="n">query_tables</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39; </span>
+<span class="s1">    select fc.RA, fc.DEC, fc.ERRAWIN_WORLD, fc.XWIN_IMAGE, fc.YWIN_IMAGE, </span>
+<span class="s1">            fc.SPREAD_MODEL, fc.SPREADERR_MODEL, fc.FLUX_AUTO, fc.FLUXERR_AUTO,</span>
+<span class="s1">            fc.FILENAME, fc.EXPNUM, fc.REQNUM, fc.OBJECT_NUMBER, fc.IMAFLAGS_ISO,</span>
+<span class="s1">            cat.CCDNUM, cat.BAND, cat.PFW_ATTEMPT_ID, cat.FILETYPE,</span>
+<span class="s1">            exp.MJD_OBS, exp.EXPTIME, exp.HA,</span>
+<span class="s1">            zp.MAG_ZERO, zp.VERSION</span>
+<span class="s1">    from y3a1_finalcut_object fc</span>
+<span class="s1">    inner join y3a1_catalog cat on cat.FILENAME = fc.FILENAME and cat.EXPNUM = fc.EXPNUM</span>
+<span class="s1">    inner join y3a1_exposure exp on cat.EXPNUM = exp.EXPNUM</span>
+<span class="s1">    inner join y3a1_zeropoint zp on exp.EXPNUM = zp.EXPNUM and cat.CCDNUM = zp.CCDNUM</span>
+<span class="s1">    INNER JOIN y3a1_qa_summary qa ON qa.expnum=fc.expnum</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+    <span class="n">query_region</span> <span class="o">=</span> <span class="s1">&#39;where RA BETWEEN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_max</span><span class="p">)</span> \
+                    <span class="o">+</span> <span class="s1">&#39; AND DEC BETWEEN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_max</span><span class="p">)</span>\
+                    <span class="o">+</span> <span class="s1">&#39;AND (IMAFLAGS_ISO = 0 or IMAFLAGS_ISO = 2048)&#39;</span> \
+                    <span class="o">+</span> <span class="s1">&#39;&#39;&#39; AND fc.expnum IN (SELECT DISTINCT i.expnum FROM y3a1_image i </span>
+<span class="s1">                         INNER JOIN y3a1_proctag ti ON i.pfw_attempt_id=ti.pfw_attempt_id </span>
+<span class="s1">                         WHERE i.filetype=&#39;coadd_nwgint&#39; </span>
+<span class="s1">                           AND zp.source=&#39;FGCM&#39; AND zp.version=&#39;v2.0&#39; </span>
+<span class="s1">                           AND ti.tag=&#39;Y3A1_COADD&#39; AND i.tilename in </span>
+<span class="s1">                         (SELECT tile FROM </span><span class="si">{:s}</span><span class="s1"> WHERE zone=&#39;</span><span class="si">{:s}</span><span class="s1">&#39;) )&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zonetable</span><span class="p">,</span> <span class="n">zone</span><span class="p">)</span>
+    <span class="n">query_region</span> <span class="o">+=</span> <span class="s2">&quot;AND ( (qa.t_eff&gt;0.3 AND fc.band IN (&#39;r&#39;,&#39;i&#39;,&#39;z&#39;)) OR (qa.t_eff&gt;0.2 AND fc.band IN (&#39;g&#39;,&#39;Y&#39;)))&quot;</span>
+        
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_tables</span> <span class="o">+</span> <span class="n">query_region</span> 
+    <span class="n">QQ</span><span class="o">=</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">QQ</span><span class="p">,</span> <span class="n">query</span></div>
+
+<div class="viewcode-block" id="query_coadd"><a class="viewcode-back" href="../index.html#query.query_coadd">[docs]</a><span class="k">def</span> <span class="nf">query_coadd</span><span class="p">(</span><span class="n">RA_min</span><span class="p">,</span> <span class="n">RA_max</span><span class="p">,</span> <span class="n">DEC_min</span><span class="p">,</span> <span class="n">DEC_max</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">zonetable</span><span class="o">=</span><span class="s1">&#39;rbutler.zone_tiles@dessci&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Queries the coadd for a given RA,DEC max and min</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">query_tables</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39; select RA, DEC, MAG_AUTO_G, MAG_AUTO_R, MAG_AUTO_I, MAG_AUTO_Z, MAG_AUTO_Y, MAG_AUTO_G - MAG_AUTO_I - 0.44 as COLOR, </span>
+<span class="s1">                    COADD_OBJECT_ID, ALPHAWIN_J2000, DELTAWIN_J2000, FLUX_AUTO_G, FLUX_AUTO_R, FLUX_AUTO_I, FLUX_AUTO_Z, FLUX_AUTO_Y</span>
+<span class="s1">                    FROM Y3A1_COADD_OBJECT_SUMMARY &#39;&#39;&#39;</span>
+    <span class="n">query_region</span> <span class="o">=</span> <span class="s1">&#39;WHERE RA BETWEEN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_max</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; AND DEC BETWEEN &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_max</span><span class="p">)</span> \
+                    <span class="o">+</span> <span class="s1">&#39;&#39;&#39;AND TILENAME in (SELECT tile FROM </span><span class="si">{:s}</span><span class="s1"> WHERE zone=&#39;</span><span class="si">{:s}</span><span class="s1">&#39;)&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">zonetable</span><span class="p">,</span> <span class="n">zone</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_tables</span> <span class="o">+</span> <span class="n">query_region</span> 
+    <span class="n">QQ</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QQ</span><span class="p">,</span> <span class="n">query</span></div>
+
+<div class="viewcode-block" id="query_coadd_tile"><a class="viewcode-back" href="../index.html#query.query_coadd_tile">[docs]</a><span class="k">def</span> <span class="nf">query_coadd_tile</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">zonetable</span><span class="o">=</span><span class="s1">&#39;rbutler.zone_tiles@dessci&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Queries the coadd on the tilename</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">query_tables</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39; select RA, DEC, MAG_AUTO_G, MAG_AUTO_R, MAG_AUTO_I, MAG_AUTO_Z, MAG_AUTO_Y, MAG_AUTO_G - MAG_AUTO_I - 0.44 as COLOR, </span>
+<span class="s1">                    COADD_OBJECT_ID, ALPHAWIN_J2000, DELTAWIN_J2000, FLUX_AUTO_G, FLUX_AUTO_R, FLUX_AUTO_I, FLUX_AUTO_Z, FLUX_AUTO_Y</span>
+<span class="s1">                    FROM Y3A1_COADD_OBJECT_SUMMARY &#39;&#39;&#39;</span>
+    <span class="n">query_region</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;WHERE TILENAME = &#39;</span><span class="si">{:s}</span><span class="s1">&#39; &#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_tables</span> <span class="o">+</span> <span class="n">query_region</span>
+    <span class="n">QQ</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QQ</span><span class="p">,</span> <span class="n">query</span></div>
+
+<div class="viewcode-block" id="query_image_info"><a class="viewcode-back" href="../index.html#query.query_image_info">[docs]</a><span class="k">def</span> <span class="nf">query_image_info</span><span class="p">(</span><span class="n">RA_max</span><span class="p">,</span> <span class="n">RA_min</span><span class="p">,</span> <span class="n">DEC_max</span><span class="p">,</span> <span class="n">DEC_min</span><span class="p">,</span> <span class="n">cursor</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Gets additional image info for the ML analysis, similar to query_joint</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s1">&#39;select RA, DEC, ERRAWIN_WORLD, ERRBWIN_WORLD, XWIN_IMAGE, YWIN_IMAGE, SPREAD_MODEL, SPREADERR_MODEL, A_IMAGE, ERRA_IMAGE, B_IMAGE, ERRB_IMAGE, THETA_IMAGE, ERRTHETAWIN_J2000, CHI2_MODEL, CHI2_PSF from Y3A1_FINALCUT_OBJECT where RA between &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">RA_max</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and DEC between &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_min</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">DEC_max</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; and (IMAFLAGS_ISO = 0 or IMAFLAGS_ISO = 2048) and EXPNUM in (232008, 232010, 232030, 232031, 232381, 232382, 232383, 232385, 232395, 233215, 233216, 233219, 233220, 233221, 233222, 234362, 234363, 234371, 234372, 234920, 234922, 234923, 234925, 234927, 234928, 234938, 234941, 234942, 234943, 240550, 240551, 240770, 240771, 240775, 240776, 240777, 241124, 241125, 241128, 241131, 241137, 241138, 241139, 241144, 241146, 241147, 241151, 241152, 241153, 241154, 241155, 241156, 241160, 241161, 241173, 241174, 242766, 242767, 242768, 242779, 243565, 243566, 243568, 243569, 243594, 243598, 244242, 246881, 246884, 246885, 247172, 247178, 247179, 247180, 247181, 247182, 247916, 247918, 247960, 251786, 251787, 251788, 251789, 251846, 253172, 253174, 253175, 253385, 253386, 253394, 253395, 253443, 258864, 258865, 258866, 258867, 264031, 264524, 264536, 264537, 264547, 264553, 266535, 266536, 266905, 268781, 268782, 268783, 268784, 349391, 349392, 349395, 349869, 359267, 362060, 362061, 362062, 362063, 362064, 362065, 362068, 364320, 364662, 364663, 364664, 364724, 364725, 364726, 364727, 364730, 364731, 364732, 364733, 365082, 365083, 365084, 365085, 365086, 365087, 365088, 366086, 367526, 367527, 367550, 367551, 367552, 367553, 369888, 370651, 370652, 370653, 370685, 370686, 370687, 370688, 370689, 370690, 370691, 370692, 370693, 370695, 371705, 371706, 371707, 372176, 372593, 372595, 372596, 372597, 372599, 372600, 372601, 372602, 372603, 373295, 374543, 374544, 374546, 374547, 374548, 374549, 374550, 374552, 374554, 374556, 374557, 374559, 374560, 374913, 378177, 378178, 378179, 378180, 378181, 379927, 379928, 379937, 381796, 381797, 381798, 381799, 381808, 382223, 382226, 382258, 382260, 382261, 382262, 382265, 382266, 382827, 383187, 383188, 383189, 384045, 384049, 384051, 384052, 384058, 384059, 384061, 384062, 384063, 386637, 387082, 387083, 387084, 387085, 387089, 387090, 387384, 387385, 388143, 388160, 388161, 388162, 388163, 388164, 388165, 390906, 390907, 390908, 390909, 390910, 390911, 391273, 391274, 391275, 391621, 391623, 391624, 391625, 391626, 397717, 398223, 398224, 398225, 398226, 398228, 398231, 398718, 398722, 398723, 398724, 398728, 398729, 399232, 400359, 400361, 400366, 400373, 400759, 400762, 401520, 464911, 464912, 464914, 464915, 466350, 466351, 466888, 470558, 470559, 470565, 470566, 470569, 471081, 471082, 471083, 471084, 477747, 477753, 477754, 478449, 478925, 478926, 478927, 478928, 478929, 478967, 478968, 478969, 478971, 478983, 478987, 478988, 478989, 478996, 484900, 484901, 484902, 484904, 484921, 484922, 484923, 484925, 485359, 486412, 486775, 486809, 487054, 487111, 488820, 488823, 488824, 488827, 488828, 488829, 489192, 489509, 490295, 490296, 490319, 490665, 490669, 490691, 490745, 490746, 490747, 491127, 491128, 491129, 493153, 493154, 493172, 493173, 493174, 493175, 493176, 493177, 493178, 493529, 493530, 493531, 493532, 493533, 493534, 493535, 493536, 493537, 493538, 493539, 493540, 493541, 494348, 494944, 494945, 494946, 494947, 494948, 494949, 495356, 495357, 497767, 498242, 498267, 498268, 498269, 503007, 503008, 503009, 503010, 503011, 503040, 503041, 503042, 506423, 506424, 506425, 506426, 506427, 506428, 507393, 507394, 507395, 507396, 507397, 507398, 507409, 509376, 509377, 509378, 509699, 510453, 510454, 512548, 512549, 512550, 512552, 512554, 512555)&#39;</span>
+    <span class="n">QQ</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QQ</span><span class="p">,</span> <span class="n">query</span></div>
+
+<div class="viewcode-block" id="query_coadd_info"><a class="viewcode-back" href="../index.html#query.query_coadd_info">[docs]</a><span class="k">def</span> <span class="nf">query_coadd_info</span><span class="p">(</span><span class="n">tile</span><span class="p">,</span> <span class="n">cursor</span><span class="p">,</span> <span class="n">zonetable</span><span class="o">=</span><span class="s1">&#39;rbutler.zone_tiles@dessci&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Queries the coadd on the tilename</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">query_tables</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39; select RA, DEC, COADD_OBJECT_ID, NEPOCHS_G, NEPOCHS_R, NEPOCHS_I, NEPOCHS_Z, NEPOCHS_Y, </span>
+<span class="s1">                    MAGERR_AUTO_G, MAGERR_AUTO_R, MAGERR_AUTO_I, MAGERR_AUTO_Z, MAGERR_AUTO_Y, FLUXERR_AUTO_G, </span>
+<span class="s1">                    FLUXERR_AUTO_R, FLUXERR_AUTO_I, FLUXERR_AUTO_Z, FLUXERR_AUTO_Y, SPREAD_MODEL_I, SPREADERR_MODEL_I</span>
+<span class="s1">                    FROM Y3A1_COADD_OBJECT_SUMMARY &#39;&#39;&#39;</span>
+    <span class="n">query_region</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;WHERE TILENAME = &#39;</span><span class="si">{:s}</span><span class="s1">&#39; &#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="n">query_tables</span> <span class="o">+</span> <span class="n">query_region</span>
+    <span class="n">QQ</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">QQ</span><span class="p">,</span> <span class="n">query</span></div>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">tiles = tb.Table.read(&#39;/home/pedro/Documents/DES/list.fits&#39;)</span>
+<span class="sd">tiles = tb.unique(tiles[&#39;TILE&#39;, &#39;RACMIN&#39;,  &#39;RACMAX&#39;, &#39;DECCMIN&#39;, &#39;DECCMAX&#39;])</span>
+<span class="sd">for i in tiles:</span>
+<span class="sd">    a = query_coadd_info(i[&#39;TILE&#39;], cur)</span>
+<span class="sd">    conn.query_and_save(a[1], save_folder+ i[&#39;TILE&#39;] + &#39;_coaddinfo.fits&#39;)&#39;&#39;&#39;</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

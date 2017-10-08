@@ -1,0 +1,434 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>linearfit &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>linearfit</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for linearfit</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">*Author: Pedro Bernardinelli*</span>
+
+<span class="sd">*Original: April 20, 2017 - Current: June 1, 2017*</span>
+
+<span class="sd">Realizes a proper motion fit given the catalog produced by the friends of friends algorithm. This linear fit is simple and does not take into account correlated measurements.</span>
+
+<span class="sd">Note that this file does a lot more than just linear fits. In fact, the most recent linear fit mechanic is currently implemented somewhere else. </span>
+<span class="sd">The big thing about this file is the Group class. This is a slow, but easy to use method of finding something with a given MATCH_ID.</span>
+
+<span class="sd">May 2, 2017:</span>
+<span class="sd">Created a new mechanic using the Group class to find the mean RA,DEC and compare to this position in the co-add catalog, thus giving the color. </span>
+
+<span class="sd">May 16, 2017:</span>
+<span class="sd">Updated version of the color information, it uses a previously run FoF to match coadd color to finalcut.</span>
+<span class="sd">Added a way to get the flux from the coadd and compare to the finalcut flux. Will change to magnitude soon</span>
+
+
+<span class="sd">June 1, 2017:</span>
+<span class="sd">Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="k">import</span> <span class="n">curve_fit</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span> 
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">spatial</span>
+<span class="kn">from</span> <span class="nn">data_management</span> <span class="k">import</span> <span class="n">radec_to_gnomonic</span> <span class="c1">#for converting the coadd to gnomonic</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;classic&#39;</span><span class="p">)</span>
+
+
+<span class="n">test_table</span> <span class="o">=</span> <span class="s2">&quot;/home/pedro/Documents/DES/zone29_small_f.fits&quot;</span>
+
+<div class="viewcode-block" id="r"><a class="viewcode-back" href="../index.html#linearfit.r">[docs]</a><span class="k">def</span> <span class="nf">r</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Returns </span>
+<span class="sd">	 	:math:`\\mathbf{r} = \\mathbf{r}_0 + \\mathbf{v}_0 t`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">r0</span> <span class="o">+</span> <span class="n">v</span><span class="o">*</span><span class="n">t</span></div>
+
+<div class="viewcode-block" id="fit"><a class="viewcode-back" href="../index.html#linearfit.fit">[docs]</a><span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">sigma</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;Does a linear fit for r = r_0 + v*t, where r = (x,y) in gnomonic coordinates and t is the observation time. </span>
+<span class="sd">	Sigma is the error in each observation, given by the error in the ellipsis of the object, as measured by the telescope </span>
+<span class="sd">	Returns (x0, v_x), rho_x (cov matrix), (y0, v_y), rho_y &#39;&#39;&#39;</span>
+	<span class="n">x_params</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">absolute_sigma</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+	<span class="n">y_params</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">absolute_sigma</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">x_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x_params</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">y_params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Group"><a class="viewcode-back" href="../index.html#linearfit.Group">[docs]</a><span class="k">class</span> <span class="nc">Group</span><span class="p">:</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Creates a group consisting of all detections with a given MATCH_ID in a given file</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">group_id</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds all the detections with the desired MATCH_ID</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+			<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">table</span> <span class="o">=</span> <span class="n">file_name</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">group_id</span> <span class="o">=</span> <span class="n">group_id</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_id</span><span class="p">]</span>
+		<span class="c1">#self.get_coords()		</span>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">a</span> <span class="o">=</span> <span class="s2">&quot;Group &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_id</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+		<span class="n">a</span> <span class="o">+=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">a</span>
+
+<div class="viewcode-block" id="Group.has_coadd"><a class="viewcode-back" href="../index.html#linearfit.Group.has_coadd">[docs]</a>	<span class="k">def</span> <span class="nf">has_coadd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">		Checks if there is a coadd match</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="s1">&#39;COADD&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]:</span>
+			<span class="k">return</span> <span class="kc">True</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Group.get_mean_pos"><a class="viewcode-back" href="../index.html#linearfit.Group.get_mean_pos">[docs]</a>	<span class="k">def</span> <span class="nf">get_mean_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		gets the mean RA and DEC of the group</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">RA</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">])</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">DEC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Group.get_coords"><a class="viewcode-back" href="../index.html#linearfit.Group.get_coords">[docs]</a>	<span class="k">def</span> <span class="nf">get_coords</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Gets RA, DEC, observation time and ERRAWIN_WORLD (error on the ellipsis) coordinates for all the detections in the group that are not COADD</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">a_coords</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#NEW_RA</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">d_coords</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#NEW_DEC</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#ERRAWIN_WORLD</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#MJD_OBS</span>
+
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;COADD&quot;</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">a_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;NEW_RA&quot;</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">d_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;NEW_DEC&quot;</span><span class="p">])</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;ERRAWIN_WORLD&quot;</span><span class="p">])</span> <span class="c1"># We&#39;ll soon add more errors here!</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s2">&quot;MJD_OBS&quot;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Group.mean_pos"><a class="viewcode-back" href="../index.html#linearfit.Group.mean_pos">[docs]</a>	<span class="k">def</span> <span class="nf">mean_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns the average RA and DEC of the group</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mean_ra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;NEW_RA&#39;</span><span class="p">])</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mean_dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;NEW_DEC&#39;</span><span class="p">])</span></div>
+<div class="viewcode-block" id="Group.proper_motion"><a class="viewcode-back" href="../index.html#linearfit.Group.proper_motion">[docs]</a>	<span class="k">def</span> <span class="nf">proper_motion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds the proper motion fit in a simple way (no assymetric errors) using scipy&#39;s linearfit</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">get_coords</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mean_pos</span><span class="p">()</span>
+
+		<span class="n">a_fit</span><span class="p">,</span> <span class="n">a_cov</span><span class="p">,</span> <span class="n">d_fit</span><span class="p">,</span> <span class="n">d_cov</span> <span class="o">=</span> <span class="n">fit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span> <span class="o">=</span> <span class="p">[</span><span class="n">a_fit</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">d_fit</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_cov</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">a_fit</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">d_fit</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">a_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">d_cov</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">group_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_ra</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_dec</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">a_fit</span> <span class="o">=</span> <span class="p">[</span><span class="n">a_fit</span><span class="p">,</span> <span class="n">a_cov</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">d_fit</span> <span class="o">=</span> <span class="p">[</span><span class="n">d_fit</span><span class="p">,</span> <span class="n">d_cov</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Group.plot"><a class="viewcode-back" href="../index.html#linearfit.Group.plot">[docs]</a>	<span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Plots this proper motion</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+		<span class="n">time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">12</span><span class="p">))</span> 
+
+		<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">311</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_coords</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;k.&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">r</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t_\mathrm</span><span class="si">{obs}</span><span class="s2"> (\mathrm</span><span class="si">{MJD}</span><span class="s2">)$&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\alpha (^\circ)$&quot;</span><span class="p">)</span>
+
+		<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">312</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_coords</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;k.&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time</span><span class="p">,</span>  <span class="n">r</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$t_\mathrm</span><span class="si">{obs}</span><span class="s2"> (\mathrm</span><span class="si">{MJD}</span><span class="s2">)$&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\delta (^\circ)$&quot;</span><span class="p">)</span>
+
+		<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">313</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a_coords</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">d_coords</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="p">,</span> <span class="n">xerr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">p_errors</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;k.&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span> <span class="n">r</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_res</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span> <span class="s2">&quot;r--&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\alpha (^\circ)$&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\delta (^\circ)$&quot;</span><span class="p">)</span>
+
+		<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;fitplot/&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">group_id</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="get_ids"><a class="viewcode-back" href="../index.html#linearfit.get_ids">[docs]</a><span class="k">def</span> <span class="nf">get_ids</span><span class="p">(</span><span class="n">file_name</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Gets all MATCH_IDs in the file</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+	<span class="n">id_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;MATCH_ID&quot;</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">)):</span>
+		<span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;MATCH_ID&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">id_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">id_list</span></div>
+
+
+<div class="viewcode-block" id="create_catalog"><a class="viewcode-back" href="../index.html#linearfit.create_catalog">[docs]</a><span class="k">def</span> <span class="nf">create_catalog</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes the proper motion for all n_obs &gt; 2 in a given file and returns a catalog of all the values</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	
+	<span class="c1">#ids = get_ids(file_name)</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+	<span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">])</span>
+
+	<span class="n">groups</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+		<span class="n">group</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">group</span><span class="o">.</span><span class="n">proper_motion</span><span class="p">()</span>
+			<span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+				<span class="n">group</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+			<span class="n">groups</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+
+
+	<span class="n">new_cat</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;RA_0&quot;</span><span class="p">,</span> <span class="s2">&quot;DEC_0&quot;</span><span class="p">,</span> <span class="s2">&quot;ERR_RA_0&quot;</span><span class="p">,</span> <span class="s2">&quot;ERR_DEC_0&quot;</span><span class="p">,</span><span class="s2">&quot;VEL_RA&quot;</span><span class="p">,</span><span class="s2">&quot;VEL_DEC&quot;</span><span class="p">,</span> <span class="s2">&quot;ERR_VEL_RA&quot;</span><span class="p">,</span> <span class="s2">&quot;ERR_VEL_DEC&quot;</span><span class="p">,</span> <span class="s2">&quot;COV_RA&quot;</span><span class="p">,</span> <span class="s2">&quot;COV_DEC&quot;</span><span class="p">,</span> <span class="s2">&quot;MATCH_ID&quot;</span><span class="p">,</span> <span class="s1">&#39;MEAN_RA&#39;</span><span class="p">,</span> <span class="s1">&#39;MEAN_DEC&#39;</span><span class="p">))</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+		<span class="n">new_cat</span><span class="o">.</span><span class="n">add_row</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">fit_res</span><span class="p">)</span>
+
+	<span class="n">new_cat</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">groups</span></div>
+
+
+<div class="viewcode-block" id="add_color"><a class="viewcode-back" href="../index.html#linearfit.add_color">[docs]</a><span class="k">def</span> <span class="nf">add_color</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">	This is to be used after the first FoF run of the data! This should be used in place of create_color_catalog. This adds the color of each detection according to the coadd match found</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+	<span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">])</span>
+
+	<span class="n">avg_color</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;COLOR&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;COADD&#39;</span><span class="p">)])</span>
+	<span class="n">colors</span> <span class="o">=</span> <span class="p">{}</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+		<span class="n">group</span> <span class="o">=</span> <span class="n">Group</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">has_coadd</span><span class="p">():</span>
+			<span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;COLOR&#39;</span><span class="p">][</span><span class="n">group</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;COADD&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">colors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">avg_color</span>
+	
+	<span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+		<span class="n">detection</span><span class="p">[</span><span class="s1">&#39;COLOR&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">colors</span><span class="p">[</span><span class="n">detection</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">]]</span>
+
+	<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<span class="c1">#create_catalog(&#39;/Users/pedro/Documents/DES/zone29/test.fits&#39;, &#39;test_groups.fits&#39;, True)</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

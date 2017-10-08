@@ -1,0 +1,1223 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to DESPM’s documentation! &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="DESPM  documentation" href="#"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Welcome to DESPM’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a><ul>
+<li><a class="reference internal" href="#database-and-auxiliary-tools">Database and auxiliary tools</a><ul>
+<li><a class="reference internal" href="#module-data_management">Data Management</a></li>
+<li><a class="reference internal" href="#module-query">Query</a></li>
+<li><a class="reference internal" href="#module-show_exp">Exposure Visualization</a></li>
+<li><a class="reference internal" href="#module-run_scr">Run Script</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#catalog-creation">Catalog creation</a><ul>
+<li><a class="reference internal" href="#module-friends_of_friends">Friends of Friends</a></li>
+<li><a class="reference internal" href="#module-linearfit">Linear Fit</a></li>
+<li><a class="reference internal" href="#module-projections">Projections</a></li>
+<li><a class="reference internal" href="#snap">SNAP</a></li>
+<li><a class="reference internal" href="#module-snap_plot">SNAP plots</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#further-analysis">Further Analysis</a><ul>
+<li><a class="reference internal" href="#module-covariance">Covariance</a></li>
+<li><a class="reference internal" href="#module-linking">Linking and Orbits</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#">Docs</a> &raquo;</li>
+        
+      <li>Welcome to DESPM’s documentation!</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="welcome-to-despm-s-documentation">
+<h1>Welcome to DESPM’s documentation!<a class="headerlink" href="#welcome-to-despm-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+<div class="section" id="database-and-auxiliary-tools">
+<h2>Database and auxiliary tools<a class="headerlink" href="#database-and-auxiliary-tools" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-data_management">
+<span id="data-management"></span><h3>Data Management<a class="headerlink" href="#module-data_management" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: March 7, 2017 - Current: May 16, 2017</em></p>
+<p>Data management and auxiliary functions for some of the modules and scripts developed so far.</p>
+<dl class="function">
+<dt id="data_management.add_gnom">
+<code class="descclassname">data_management.</code><code class="descname">add_gnom</code><span class="sig-paren">(</span><em>file</em>, <em>ra_0=0</em>, <em>dec_0=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#add_gnom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.add_gnom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens and reads a (astropy Table) file and adds the gnomonic coordinate projection</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.add_group_information">
+<code class="descclassname">data_management.</code><code class="descname">add_group_information</code><span class="sig-paren">(</span><em>file_name</em>, <em>friends_list</em>, <em>offset=0</em>, <em>name=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#add_group_information"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.add_group_information" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a FoF list of clusters, adds to the original table a “MATCH_ID” column with the group the point belongs to, 
+starting with ‘offset’ as the first value. If file_name is a table object (instead of a string), saves to file named in name</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.coadd_gnomonic">
+<code class="descclassname">data_management.</code><code class="descname">coadd_gnomonic</code><span class="sig-paren">(</span><em>filename</em>, <em>ra_0</em>, <em>dec_0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#coadd_gnomonic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.coadd_gnomonic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a Gnomonic projection for the co-add catalog</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.copy_data_gnom">
+<code class="descclassname">data_management.</code><code class="descname">copy_data_gnom</code><span class="sig-paren">(</span><em>file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#copy_data_gnom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.copy_data_gnom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Opens and reads a (astropy Table) file, returns the Gnomonic projection of RA, DEC</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.merge_tables">
+<code class="descclassname">data_management.</code><code class="descname">merge_tables</code><span class="sig-paren">(</span><em>table1</em>, <em>table2</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#merge_tables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.merge_tables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges two different tables (i.e.: coadd and finalcut)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.one_arc_sec">
+<code class="descclassname">data_management.</code><code class="descname">one_arc_sec</code><span class="sig-paren">(</span><em>ra_0</em>, <em>dec_0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#one_arc_sec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.one_arc_sec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds one arc sec in for the Gnomonic projection centered around RA_0, DEC_0</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.radec_to_gnomonic">
+<code class="descclassname">data_management.</code><code class="descname">radec_to_gnomonic</code><span class="sig-paren">(</span><em>ra</em>, <em>dec</em>, <em>ra_0</em>, <em>dec_0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#radec_to_gnomonic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.radec_to_gnomonic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts RA, DEC to x,y in gnomonic coordinates using pixmappy so we can use an Euclidean metric for the FoF</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.save_file">
+<code class="descclassname">data_management.</code><code class="descname">save_file</code><span class="sig-paren">(</span><em>table</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#save_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.save_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves an astropy Table</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="data_management.write_id">
+<code class="descclassname">data_management.</code><code class="descname">write_id</code><span class="sig-paren">(</span><em>id_num</em>, <em>matchid</em>, <em>group</em>, <em>offset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data_management.html#write_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data_management.write_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the MATCH_ID for each group</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-query">
+<span id="query"></span><h3>Query<a class="headerlink" href="#module-query" title="Permalink to this headline">¶</a></h3>
+<p>Author: Pedro Bernardinelli
+Original: April 7, 2017
+Current: June 1, 2017
+Non-Jupyter version of the DESDM query for a given RA, DEC region, downloading information from multiple tables in the database.
+See “DESDM_DB_QUERY” Jupyter notebook for more details
+May 2, 2017:
+Added an analogous query for the coadd catalog, allowing us to search for the color of a given object. Still not sure if this is going to work the way I intend it to, but let’s see.</p>
+<p>June 1, 2017:
+Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</p>
+<dl class="function">
+<dt id="query.query_coadd">
+<code class="descclassname">query.</code><code class="descname">query_coadd</code><span class="sig-paren">(</span><em>RA_min</em>, <em>RA_max</em>, <em>DEC_min</em>, <em>DEC_max</em>, <em>cursor</em>, <em>zonetable='rbutler.zone_tiles&#64;dessci'</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/query.html#query_coadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#query.query_coadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries the coadd for a given RA,DEC max and min</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="query.query_coadd_info">
+<code class="descclassname">query.</code><code class="descname">query_coadd_info</code><span class="sig-paren">(</span><em>tile</em>, <em>cursor</em>, <em>zonetable='rbutler.zone_tiles&#64;dessci'</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/query.html#query_coadd_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#query.query_coadd_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries the coadd on the tilename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="query.query_coadd_tile">
+<code class="descclassname">query.</code><code class="descname">query_coadd_tile</code><span class="sig-paren">(</span><em>tile</em>, <em>cursor</em>, <em>zonetable='rbutler.zone_tiles&#64;dessci'</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/query.html#query_coadd_tile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#query.query_coadd_tile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries the coadd on the tilename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="query.query_image_info">
+<code class="descclassname">query.</code><code class="descname">query_image_info</code><span class="sig-paren">(</span><em>RA_max</em>, <em>RA_min</em>, <em>DEC_max</em>, <em>DEC_min</em>, <em>cursor</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/query.html#query_image_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#query.query_image_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets additional image info for the ML analysis, similar to query_joint</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="query.query_joint">
+<code class="descclassname">query.</code><code class="descname">query_joint</code><span class="sig-paren">(</span><em>RA_min</em>, <em>RA_max</em>, <em>DEC_min</em>, <em>DEC_max</em>, <em>cursor</em>, <em>zonetable='rbutler.zone_tiles&#64;dessci'</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/query.html#query_joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#query.query_joint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a query for a given RA and DEC in the y3a1_finalcut_object,
+downloading the extra needed information from other tables</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-show_exp">
+<span id="exposure-visualization"></span><h3>Exposure Visualization<a class="headerlink" href="#module-show_exp" title="Permalink to this headline">¶</a></h3>
+<p>Author: Pedro Bernardinelli
+Original: Jul 27, 2017</p>
+<p>This is a visualization tool for DES exposures (SINGLE EPOCH) and COADD images. It uses astropy’s WCS features to use world coordinates in 
+matplotlib’s images, which is super convenient. One n by n image is made for single epoch, where n is round(sqrt(exposures in the region)) + 1
+and 3x2 for coadds (as we have 5 images). We require the actual files for each image, which is pretty annoying…
+The contrast level of the image is defined by Gary’s clippedMean. If it fails, we try using astropy’s ZScaleInterval.
+We use the SCI extension of the FITS image, as we want.</p>
+<dl class="function">
+<dt id="show_exp.exp_data">
+<code class="descclassname">show_exp.</code><code class="descname">exp_data</code><span class="sig-paren">(</span><em>match</em>, <em>tile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#exp_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.exp_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Slow as hell way of finding the exposures in which the detections were made</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.find_exp_coords">
+<code class="descclassname">show_exp.</code><code class="descname">find_exp_coords</code><span class="sig-paren">(</span><em>ra</em>, <em>dec</em>, <em>file_dir</em>, <em>im_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#find_exp_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.find_exp_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>For all exposures, finds if the given RA, DEC is inside the exposure region. Returns immasked and segmaps OR coadd filenames for these images</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.get_exp">
+<code class="descclassname">show_exp.</code><code class="descname">get_exp</code><span class="sig-paren">(</span><em>data</em>, <em>output</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#get_exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.get_exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given MATCH_ID, finds all the exposures in which it appears and makes an EXPOSURES column that can be read easily by the other routines in this code 
+This is saved in the output file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.make_table">
+<code class="descclassname">show_exp.</code><code class="descname">make_table</code><span class="sig-paren">(</span><em>file_dir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#make_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.make_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lists all single-epoch EXPNUM + CCDNUM and image type (image or segmap) for all files in a given directory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.show_images_coadd">
+<code class="descclassname">show_exp.</code><code class="descname">show_images_coadd</code><span class="sig-paren">(</span><em>data_point</em>, <em>file_dir</em>, <em>folder</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#show_images_coadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.show_images_coadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Coadd visualization feature. For a given {RA, DEC}, it finds which tile it is part of and generates the image centered around this point. 
+Also produces a 0.001 deg Spherical circle centered around this point, as the actual presented region is bigger than that. 
+It fails for some images and I don’t know why.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.show_images_point">
+<code class="descclassname">show_exp.</code><code class="descname">show_images_point</code><span class="sig-paren">(</span><em>data_point</em>, <em>file_dir</em>, <em>folder</em>, <em>segmap=True</em>, <em>exposure_name=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#show_images_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.show_images_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single epoch visualization feature. For a given {RA, DEC}, it finds which exposures covered this part of the sky and generates the image centered around this point. 
+Also produces a 0.001 deg Spherical circle centered around this point, as the actual presented region is bigger than that. Images in which it was detected have a (D)
+in the title, and the circle is of a different color.
+It fails for some images and I don’t know why.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_exp.show_images_se">
+<code class="descclassname">show_exp.</code><code class="descname">show_images_se</code><span class="sig-paren">(</span><em>data_point</em>, <em>file_dir</em>, <em>folder</em>, <em>segmap=True</em>, <em>exposure_name=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/show_exp.html#show_images_se"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#show_exp.show_images_se" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single epoch visualization feature. For a given {RA, DEC}, it finds which exposures covered this part of the sky and generates the image centered around this point. 
+Also produces a 0.001 deg Spherical circle centered around this point, as the actual presented region is bigger than that. Images in which it was detected have a (D)
+in the title, and the circle is of a different color.
+It fails for some images and I don’t know why.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-run_scr">
+<span id="run-script"></span><h3>Run Script<a class="headerlink" href="#module-run_scr" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: April 19, 2017 - Current: June 1, 2017</em></p>
+<dl class="docutils">
+<dt>Little script to run everything done so far but the query. It opens a .fits file fresh from DESDM, applies Gary’s astrometric solutions, runs a FoF and, finally, returns a .FITS file with a bunch of new information:</dt>
+<dd><ul class="first last simple">
+<li>NEW_RA    : RA after astrometric solution</li>
+<li>NEW_DEC   : DEC after astrometric solution</li>
+<li>X_GNOM    : x gnomonic coordinate centered on RA_0, DEC_0</li>
+<li>Y_GNOM    : y gnomonic coordinate centered on RA_0, DEC_0</li>
+<li>PROJ_FLAG : identifier for the astrometric solutions. 0 if there’s one, 1 if there wasn’t one</li>
+<li>MATCH_ID  : group of points returned by FoF for a given [linking] length</li>
+</ul>
+</dd>
+</dl>
+<p>This also merges the COADD catalog with the FINALCUT one. We can also run the query from this file, which is convenient. This is the “control panel” of the whole program.</p>
+<p>May 20, 2017:
+Changed the way distance scales on the gnomonic projection are used.</p>
+<p>June 1, 2017:
+Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</p>
+<dl class="function">
+<dt id="run_scr.query_and_run">
+<code class="descclassname">run_scr.</code><code class="descname">query_and_run</code><span class="sig-paren">(</span><em>tilename</em>, <em>save_folder</em>, <em>zone</em>, <em>zone_file</em>, <em>nodes=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/run_scr.html#query_and_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run_scr.query_and_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes both the coadd query for a given tilename and runs the whole friends of friends + projection pipeline</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="run_scr.run">
+<code class="descclassname">run_scr.</code><code class="descname">run</code><span class="sig-paren">(</span><em>zone_file</em>, <em>finalcut_file</em>, <em>coadd_file</em>, <em>file_prefix</em>, <em>RA_0</em>, <em>DEC_0</em>, <em>offset=0</em>, <em>cores=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/run_scr.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run_scr.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Runs the group matching pipeline, as follows:</p>
+<ol class="arabic simple">
+<li>Projects the catalogs to a gnomonic coordinate system centered around (RA_0, DEC_0)</li>
+<li>First friends of friends, with catalog world coordinates</li>
+<li>Finds the color for all coadd-matched objects. Assigns the average color of the catalog to the no-coadd matches</li>
+<li>Projects the catalog for and re-calculates the world coordinates using Gary’s astrometric solutions</li>
+<li>Runs a second friends of friends, with these results as output</li>
+</ol>
+<dl class="docutils">
+<dt>Arguments:</dt>
+<dd><ul class="first last simple">
+<li>zone_file (str): the zone WCS file for the astrometric solutions</li>
+<li>finalcut_file (str): the Finalcut/Single Epoch fits catalog coming from DESDM SQL</li>
+<li>coadd_file (str): the Coadd catalog from DESDM</li>
+<li>file_prefix (str): Prefix for the file to be saved (for example, the tilename)</li>
+<li>RA_0 (float): One of the coordinates for the gnomonic projection</li>
+<li>DEC_0 (float): The second center coordinates</li>
+<li>offset (int): Offset for the MATCH_ID</li>
+<li>nodes (int): number of cores for MP parallelization</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="run_scr.run_fof">
+<code class="descclassname">run_scr.</code><code class="descname">run_fof</code><span class="sig-paren">(</span><em>file_name</em>, <em>l</em>, <em>offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/run_scr.html#run_fof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#run_scr.run_fof" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies the gnomonic coordinates, runs the friends of friends and returns a catalog with the added MATCH_ID</p>
+</dd></dl>
+
+<p><strong>Example code:</strong></p>
+<ul class="simple">
+<li>This is the format for running on each tile of a zone, including the query:</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DES0135-0416&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0135-0458&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0136-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0136-0624&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0137-0707&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0137-0250&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0137-0333&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0138-0416&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0138-0458&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0139-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0139-0624&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0140-0250&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0140-0707&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0140-0333&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0140-0416&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0141-0458&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0141-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0142-0624&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0143-0250&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0143-0707&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0143-0333&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0143-0416&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0144-0458&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0144-0541&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0145-0624&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0146-0250&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0146-0707&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0146-0333&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0146-0416&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0147-0458&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0147-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0148-0624&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0148-0250&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0148-0707&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0149-0333&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0149-0416&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0150-0458&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0150-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0151-0624&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0151-0250&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0151-0707&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0152-0333&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0152-0416&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0152-0458&quot;</span><span class="p">,</span>
+                 <span class="s2">&quot;DES0153-0541&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0154-0624&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0154-0250&quot;</span><span class="p">,</span> <span class="s2">&quot;DES0154-0707&quot;</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">:</span>
+        <span class="k">print</span> <span class="n">i</span>
+        <span class="n">query_and_run</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">folder</span><span class="o">+</span><span class="s1">&#39;tiles/&#39;</span><span class="p">,</span> <span class="s1">&#39;29&#39;</span><span class="p">,</span> <span class="n">folder</span><span class="o">+</span><span class="s1">&#39;zone029.astro&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>This is the format for running on a single finalcut + coadd pair:</li>
+</ul>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">run</span><span class="p">(</span><span class="n">folder</span><span class="o">+</span><span class="s1">&#39;zone029.astro&#39;</span><span class="p">,</span> <span class="n">folder</span><span class="o">+</span><span class="s1">&#39;zone29_finalcut.fits&#39;</span><span class="p">,</span>
+        <span class="n">folder</span><span class="o">+</span><span class="s1">&#39;zone29_coadd.fits&#39;</span><span class="p">,</span> <span class="n">folder</span><span class="o">+</span><span class="s1">&#39;zone29_&#39;</span><span class="p">,</span> <span class="n">RA_0</span><span class="p">,</span> <span class="n">DEC_0</span><span class="p">,</span> <span class="n">nodes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="catalog-creation">
+<h2>Catalog creation<a class="headerlink" href="#catalog-creation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-friends_of_friends">
+<span id="friends-of-friends"></span><h3>Friends of Friends<a class="headerlink" href="#module-friends_of_friends" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: March 7, 2017 - Current: June 1, 1017</em></p>
+<p>Friends of friends implementation using kD trees. 
+The algorithm finds all points within a certain linking length of each other and then proceeds to
+match everyone that has a common ‘friend’, returning a list of all the clusters of points.</p>
+<p>Usage: the run function takes as an input the data-set + distance and returns the clustered data.</p>
+<p>random_clustering and plot provide a way to test the algorithm with a random data set, creating n points in a radius r</p>
+<p>May 22, 2017:
+Now there’s both a ‘set’ and a ‘numpy array’ implementation. They are equivalent.</p>
+<p>June 1, 2017:
+Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</p>
+<dl class="function">
+<dt id="friends_of_friends.find_friend">
+<code class="descclassname">friends_of_friends.</code><code class="descname">find_friend</code><span class="sig-paren">(</span><em>data</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#find_friend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.find_friend" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses scipy’s kDTree functionalities to find all friends (points within a given distance of each other)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="friends_of_friends.friends_of_friends">
+<code class="descclassname">friends_of_friends.</code><code class="descname">friends_of_friends</code><span class="sig-paren">(</span><em>list_friends</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#friends_of_friends"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.friends_of_friends" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function of the code. Using a mutating list of friends, finds all sets that overlap with each other and joins them together. 
+New version, for loop changed for set operations, significantly faster</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="friends_of_friends.friends_of_friends_np">
+<code class="descclassname">friends_of_friends.</code><code class="descname">friends_of_friends_np</code><span class="sig-paren">(</span><em>list_friends</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#friends_of_friends_np"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.friends_of_friends_np" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function of the code. Using a mutating list of friends, finds all sets that overlap with each other and joins them together. 
+New version, for loop changed for set operations, significantly faster
+Written in numpy arrays instead of sets. It should consume less memory, but there’s not that much of a change in performance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="friends_of_friends.plot">
+<code class="descclassname">friends_of_friends.</code><code class="descname">plot</code><span class="sig-paren">(</span><em>a</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a data-set a, runs the FoF and color-codes the results in a plot. (<em>testing function</em>)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="friends_of_friends.random_clustering">
+<code class="descclassname">friends_of_friends.</code><code class="descname">random_clustering</code><span class="sig-paren">(</span><em>n</em>, <em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#random_clustering"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.random_clustering" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates <img class="math" src="_images/math/e11f2701c4a39c7fe543a6c4150b421d50f1c159.png" alt="n"/> random points in a region of radius <img class="math" src="_images/math/eaa6ad49a7f78fe5a13b486690163bf2dc7e3e60.png" alt="r"/>. (<em>testing function</em>)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="friends_of_friends.test">
+<code class="descclassname">friends_of_friends.</code><code class="descname">test</code><span class="sig-paren">(</span><em>n</em>, <em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/friends_of_friends.html#test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#friends_of_friends.test" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates n random points in a region of radius r and plots the friends-of-friends results for different linking lengths. (<em>testing function</em>)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-linearfit">
+<span id="linear-fit"></span><h3>Linear Fit<a class="headerlink" href="#module-linearfit" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: April 20, 2017 - Current: June 1, 2017</em></p>
+<p>Realizes a proper motion fit given the catalog produced by the friends of friends algorithm. This linear fit is simple and does not take into account correlated measurements.</p>
+<p>Note that this file does a lot more than just linear fits. In fact, the most recent linear fit mechanic is currently implemented somewhere else. 
+The big thing about this file is the Group class. This is a slow, but easy to use method of finding something with a given MATCH_ID.</p>
+<p>May 2, 2017:
+Created a new mechanic using the Group class to find the mean RA,DEC and compare to this position in the co-add catalog, thus giving the color.</p>
+<p>May 16, 2017:
+Updated version of the color information, it uses a previously run FoF to match coadd color to finalcut.
+Added a way to get the flux from the coadd and compare to the finalcut flux. Will change to magnitude soon</p>
+<p>June 1, 2017:
+Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</p>
+<dl class="class">
+<dt id="linearfit.Group">
+<em class="property">class </em><code class="descclassname">linearfit.</code><code class="descname">Group</code><span class="sig-paren">(</span><em>file_name</em>, <em>group_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a group consisting of all detections with a given MATCH_ID in a given file</p>
+<dl class="method">
+<dt id="linearfit.Group.get_coords">
+<code class="descname">get_coords</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.get_coords"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.get_coords" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets RA, DEC, observation time and ERRAWIN_WORLD (error on the ellipsis) coordinates for all the detections in the group that are not COADD</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linearfit.Group.get_mean_pos">
+<code class="descname">get_mean_pos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.get_mean_pos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.get_mean_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>gets the mean RA and DEC of the group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linearfit.Group.has_coadd">
+<code class="descname">has_coadd</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.has_coadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.has_coadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if there is a coadd match</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linearfit.Group.mean_pos">
+<code class="descname">mean_pos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.mean_pos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.mean_pos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the average RA and DEC of the group</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linearfit.Group.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots this proper motion</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linearfit.Group.proper_motion">
+<code class="descname">proper_motion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#Group.proper_motion"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.Group.proper_motion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the proper motion fit in a simple way (no assymetric errors) using scipy’s linearfit</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="linearfit.add_color">
+<code class="descclassname">linearfit.</code><code class="descname">add_color</code><span class="sig-paren">(</span><em>file_name</em>, <em>output_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#add_color"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.add_color" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is to be used after the first FoF run of the data! This should be used in place of create_color_catalog. This adds the color of each detection according to the coadd match found</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linearfit.create_catalog">
+<code class="descclassname">linearfit.</code><code class="descname">create_catalog</code><span class="sig-paren">(</span><em>file_name</em>, <em>output_file</em>, <em>plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#create_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.create_catalog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the proper motion for all n_obs &gt; 2 in a given file and returns a catalog of all the values</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linearfit.fit">
+<code class="descclassname">linearfit.</code><code class="descname">fit</code><span class="sig-paren">(</span><em>x</em>, <em>y</em>, <em>t</em>, <em>sigma</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Does a linear fit for r = r_0 + v*t, where r = (x,y) in gnomonic coordinates and t is the observation time. 
+Sigma is the error in each observation, given by the error in the ellipsis of the object, as measured by the telescope 
+Returns (x0, v_x), rho_x (cov matrix), (y0, v_y), rho_y</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linearfit.get_ids">
+<code class="descclassname">linearfit.</code><code class="descname">get_ids</code><span class="sig-paren">(</span><em>file_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#get_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.get_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all MATCH_IDs in the file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linearfit.r">
+<code class="descclassname">linearfit.</code><code class="descname">r</code><span class="sig-paren">(</span><em>t</em>, <em>r0</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linearfit.html#r"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linearfit.r" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Returns </dt>
+<dd><img class="math" src="_images/math/0f2d1ace3c0339d0e7a3a8933082e3cb27c7b7c7.png" alt="\mathbf{r} = \mathbf{r}_0 + \mathbf{v}_0 t"/></dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-projections">
+<span id="projections"></span><h3>Projections<a class="headerlink" href="#module-projections" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: April 12, 2017 - Current: June 1, 2017</em></p>
+<p>Applies Gary’s astrometric solutions using PixelMapCollection from pixmappy (<a class="reference external" href="https://github.com/gbernstein/pixmappy">https://github.com/gbernstein/pixmappy</a>).</p>
+<p>The general idea is that a given observation in a certain CCD has a given (unique) EXPNUM and CCDNUM. 
+These are mapped out in a .astro file that has a certain solution that transforms the pixel coordinates to
+more precise position measurements (i.e. RA, DEC). This code also reprojects the solution to a gnomomic
+coordinate system centered at a given RA_0, DEC_0 (e.g. the center of the region to be analysed), so we can use
+this solution easily with a FoF code.</p>
+<p>The format for the solutions is of the form N$EXPNUM/$CCD, where $CCD is the CCD identifier in the DECam. 
+There is a requirement for number of cores to be used. This is set to be 4 by default, given my desktop’s computing power. This can be changed in calling the run method.</p>
+<p>June 1, 2017:
+Some of the old/less optimal versions of the code were removed. This file is only keeping the most up-to-date versions of each function, ready to use. Everything else was moved to the appropriate section in old.py</p>
+<dl class="function">
+<dt id="projections.project_catalog">
+<code class="descclassname">projections.</code><code class="descname">project_catalog</code><span class="sig-paren">(</span><em>zone</em>, <em>file_name</em>, <em>save_file</em>, <em>ra_center=0</em>, <em>dec_center=0</em>, <em>cores=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/projections.html#project_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#projections.project_catalog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parallelized version of the project catalog. After de-serializing the YAML file, it finds all unique exposures, creates a WCS identifier (either COADD or DXXXXXXXX/CCD) and, for each unique WCS, applies the projection.
+project_wcs tries to open a wcs with the given name. If it doesn’t exist, it’ll get either ALPHA,DELTAWIN_J2000 for coadds or RA, DEC for finalcuts. The Pool uses the maximum number of CPU cores available. This could be
+changed if needed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="projections.project_star">
+<code class="descclassname">projections.</code><code class="descname">project_star</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/projections.html#project_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#projections.project_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>Star function so we can parallelize the process.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="projections.project_wcs">
+<code class="descclassname">projections.</code><code class="descname">project_wcs</code><span class="sig-paren">(</span><em>wcs</em>, <em>coords</em>, <em>pmc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/projections.html#project_wcs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#projections.project_wcs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the WCS is the coadd catalog or not and then applies Gary’s projection to the whole exposure</p>
+</dd></dl>
+
+</div>
+<div class="section" id="snap">
+<span id="id1"></span><h3>SNAP<a class="headerlink" href="#snap" title="Permalink to this headline">¶</a></h3>
+<span class="target" id="module-snap"></span><p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: Who knows? Sometime May 2017 - Current: July 28, 2017</em></p>
+<p>This program has the goal of transforming the second Friends of Friends output for one or multiple tiles into a catalog of detected objects, returning 
+Delta t (defined in get_time), Delta m (defined coadd_mag), n_obs (in get_time), &lt;RA&gt; and &lt;DEC&gt; for all coadd-match objects and all but Delta m for the no-coadds.
+As auxiliary information, we also preserve the MATCH_ID and TILE for each object.</p>
+<dl class="function">
+<dt id="snap.coadd_mag">
+<code class="descclassname">snap.</code><code class="descname">coadd_mag</code><span class="sig-paren">(</span><em>groups</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#coadd_mag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.coadd_mag" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given COADD-match list of catalog appearances, finds all the coadd magnitudes and proceeds to compute</p>
+<p><img class="math" src="_images/math/e09e98eabe86d69fb8fb29d26892a0d1d1153643.png" alt="\Delta m_f \equiv \min_{\mathrm{abs}} (m_{\text{single epoch},i,f} - m_{\text{coadd},f}),"/></p>
+<p>where f is the filter, i is the single-epoch detection and min_abs is the sign-preserving absolute minimum, 
+that is, the closest value to zero, indiscriminant of sign, is kept, but we preserve its sign. The function returns Delta m_f for all the filters. 
+Note that if the coadd doesn’t have the magnitude for a certain filter, we’ll have m = +- 99, so this value is going to be huge</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.get_groups">
+<code class="descclassname">snap.</code><code class="descname">get_groups</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#get_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.get_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given data table (i.e. an output from the second FoF) sorted by MATCH_ID, creates a dictionary indexed by the MATCH_ID where each item is a list of every appearance of this ID in table. 
+vstacking would be ideal, as, then, each group would have its own table, but this process is time consuming and slows the process significantly</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.get_time">
+<code class="descclassname">snap.</code><code class="descname">get_time</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#get_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.get_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given data list (i.e. an entry in get_groups’ dictionary), finds</p>
+<p><img class="math" src="_images/math/e84d3a59bfb227ccb933defeebbf349e9001225d.png" alt="\Delta t \equiv \max(|t_i - t_j|)"/>,</p>
+<p>for all i,j observations of the same object. The function returns <img class="math" src="_images/math/ec002955bdf95ee9869878fbad4f80fc98539359.png" alt="\Delta t"/>, the second maximum value and</p>
+<p><img class="math" src="_images/math/c646897b7a8d39e32440eb015b1265f628188238.png" alt="n_\mathrm{obs} \equiv \text{number of single-epoch detections of the given object}."/></p>
+<p>For an object with only one single-epoch detection, we get {0,0,1}. For the coadd-only objects (that is, the objects with no single epoch detection), we get {-1,-1,0}.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.mag_cat">
+<code class="descclassname">snap.</code><code class="descname">mag_cat</code><span class="sig-paren">(</span><em>coadd</em>, <em>groups</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#mag_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.mag_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds a dictionary of <img class="math" src="_images/math/cfa858289da4941e4fee6adba30fd894f53f999f.png" alt="\Delta m_f"/> for all objects</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.obj_catalog">
+<code class="descclassname">snap.</code><code class="descname">obj_catalog</code><span class="sig-paren">(</span><em>tilename</em>, <em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#obj_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.obj_catalog" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given tile(name) and FoF-output (filename), finds <img class="math" src="_images/math/ec002955bdf95ee9869878fbad4f80fc98539359.png" alt="\Delta t"/>, <img class="math" src="_images/math/3cbdd6271fccd6c4634a4b7f2cdb56cd82423ea6.png" alt="\Delta m \equiv \min_{\mathrm{abs}}(\Delta m_f)"/>, <img class="math" src="_images/math/e11f2701c4a39c7fe543a6c4150b421d50f1c159.png" alt="n"/>, 
+<img class="math" src="_images/math/d21bf12b02d11dbc24af044f5ba116088d26aca4.png" alt="\langle \alpha \rangle"/> and <img class="math" src="_images/math/b3cdec82157d22c70a2e1e39267c598157fecab5.png" alt="\langle \delta \rangle"/> for all detected objects,
+returning them in two files: one for all coadd matches and all for all no-coadd matches.
+This started as the non-graphical version of plot_histograms (now in snap_plots)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.obj_star">
+<code class="descclassname">snap.</code><code class="descname">obj_star</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#obj_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.obj_star" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a * argument implementation of object_catalog, so we can paralelize the process for multiple tiles</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.tile_cat">
+<code class="descclassname">snap.</code><code class="descname">tile_cat</code><span class="sig-paren">(</span><em>tiles</em>, <em>nodes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#tile_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.tile_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>This script generates a coadd and a noncoadd catalog for each of the tiles, using the given number of nodes</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.time_cat">
+<code class="descclassname">snap.</code><code class="descname">time_cat</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#time_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.time_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given get_groups dictionary, returns <img class="math" src="_images/math/ec002955bdf95ee9869878fbad4f80fc98539359.png" alt="\Delta t"/>, <img class="math" src="_images/math/9bc684331c8ff72d921ba9095129015a11d9def9.png" alt="\Delta t_2"/>, <img class="math" src="_images/math/58f0359b9157d06bda53c26465519c5caf42b665.png" alt="n_\mathrm{obs}"/> and MATCH_ID for all the entries in this dic.
+Note that, as every object in the catalog has an associated Delta t and appears in the dictionary, n_group is isomorphich to MATCH_ID.  
+This was not true in the previous versions of the code and led to a mistake in the identification of no-coadds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap.zone_cat">
+<code class="descclassname">snap.</code><code class="descname">zone_cat</code><span class="sig-paren">(</span><em>tiles</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap.html#zone_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap.zone_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges all tile (in zone) files into a single table, stacking everything</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-snap_plot">
+<span id="snap-plots"></span><h3>SNAP plots<a class="headerlink" href="#module-snap_plot" title="Permalink to this headline">¶</a></h3>
+<p><em>Author: Pedro Bernardinelli</em></p>
+<p><em>Original: Who knows? Sometime May 2017  - Current: July 28, 2017</em></p>
+<p>Split from <a class="reference internal" href="#snap"><span class="std std-ref">SNAP</span></a>. This is the graphical and plotting part of that code.</p>
+<p>This program has the goal of transforming the second Friends of Friends output for one or multiple tiles into a catalog of detected objects, returning 
+Delta t (defined in get_time), Delta m (defined coadd_mag), n_obs (in get_time), &lt;RA&gt; and &lt;DEC&gt; for all coadd-match objects and all but Delta m for the no-coadds.
+As auxiliary information, we also preserve the MATCH_ID and TILE for each object.</p>
+<dl class="function">
+<dt id="snap_plot.hist_detections">
+<code class="descclassname">snap_plot.</code><code class="descname">hist_detections</code><span class="sig-paren">(</span><em>coadd</em>, <em>nocoadd</em>, <em>borders</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#hist_detections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.hist_detections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keeping for historic/debugging purposes, sees how the edges of the tile affects the number of no-coadds</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.hist_detections_join">
+<code class="descclassname">snap_plot.</code><code class="descname">hist_detections_join</code><span class="sig-paren">(</span><em>coadd</em>, <em>nocoadd</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#hist_detections_join"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.hist_detections_join" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checking for some other interesting cases, such as <img class="math" src="_images/math/6b169ba2466242f5cd8be0d7d235e5bf75b981e1.png" alt="n_\mathrm{obs} \times \Delta t"/>…. Still unsure if this is useful</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.plot_histograms">
+<code class="descclassname">snap_plot.</code><code class="descname">plot_histograms</code><span class="sig-paren">(</span><em>tilename</em>, <em>filename</em>, <em>save=True</em>, <em>legend=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#plot_histograms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.plot_histograms" title="Permalink to this definition">¶</a></dt>
+<dd><p>This does everything that <code class="docutils literal"><span class="pre">snap.obj_catalog</span></code> does, but also plotting everything. Not useful at all. Can also skip saving the plots, so one could merge multiple regions into one.</p>
+<p>Also, this function is horribly long.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.plot_mag">
+<code class="descclassname">snap_plot.</code><code class="descname">plot_mag</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#plot_mag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.plot_mag" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given coadd-file from obj_catalog, produces the <img class="math" src="_images/math/7d4c4bbe8852f49647687080b340518fc1051d60.png" alt="\Delta m"/> histogram, focusing on the <img class="math" src="_images/math/ad70afe4d149dd73fde6b3bdf8ef00b1db19498d.png" alt="\Delta m &lt; -0.5"/> region and for some interesting <img class="math" src="_images/math/1ef4450f91e01fa5db8a34a0e0556fc5a8f9a3b9.png" alt="\Delta t \cup \Delta m"/> cuts</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.plot_mag_zero">
+<code class="descclassname">snap_plot.</code><code class="descname">plot_mag_zero</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#plot_mag_zero"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.plot_mag_zero" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the Delta m histogram for <img class="math" src="_images/math/5cf805116bfe902151190a47a2e2b6d2b2a694d8.png" alt="\Delta t = 0"/> detections</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.time_plot_coadd">
+<code class="descclassname">snap_plot.</code><code class="descname">time_plot_coadd</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#time_plot_coadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.time_plot_coadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a coadd-output from obj_catalog, produces a histogram of <img class="math" src="_images/math/ec002955bdf95ee9869878fbad4f80fc98539359.png" alt="\Delta t"/>, focusing on the <img class="math" src="_images/math/e2e66c14c442debe3d7a189151faaac6e6027b76.png" alt="0 &lt; \Delta t &lt; 2 \, \mathrm{days}"/> and <img class="math" src="_images/math/f5ae2cfe93be5e01d989b926029b449609dbeba0.png" alt="0 &lt; \Delta t &lt; 60 \, \mathrm{minutes}"/> region.</p>
+<p>We also get a histogram of <img class="math" src="_images/math/58f0359b9157d06bda53c26465519c5caf42b665.png" alt="n_\mathrm{obs}"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="snap_plot.time_plot_nocoadd">
+<code class="descclassname">snap_plot.</code><code class="descname">time_plot_nocoadd</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/snap_plot.html#time_plot_nocoadd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#snap_plot.time_plot_nocoadd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to time_plot_coadd, but for the no-coadds</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="further-analysis">
+<h2>Further Analysis<a class="headerlink" href="#further-analysis" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-covariance">
+<span id="covariance"></span><h3>Covariance<a class="headerlink" href="#module-covariance" title="Permalink to this headline">¶</a></h3>
+<p>Author: Pedro Bernardinelli
+May 1, 2017
+Current: July 28, 2017</p>
+<p>Calculates covariances from the exposures using Gary’s astrometric files. This utility copies the data
+using astroplots’ select function and proceeds to obtain all the individual covariance matrices given the
+residuals in v = (x,y) for a given weight factor.
+Calculates the two-point correlation function</p>
+<p><img class="math" src="_images/math/03221e029550cead6e23ab651d16ea7875dc4ebb.png" alt="\xi(\mathbf{r}) = \langle \Delta \mathbf{x}(\mathbf{x}) \Delta \mathbf{x}(\mathbf{x}+\mathbf{r}) \rangle"/></p>
+<p>for each exposure. From these values, we produce &lt;xi&gt;, the average of a given region,
+so we can measure the total distortion in the image not coming from shot noise (xi(0)).
+We also compute the ellipticity of the two-point function, where</p>
+<p><img class="math" src="_images/math/d4874b9ee9b6dba53b13daf4c4a0fc22d06030a0.png" alt="e_1 = \frac{I_{xx} - I{yy}}{I_{xx} + I_{yy}}"/></p>
+<p><img class="math" src="_images/math/e846a9ada74f60a27a8fbb4c0b3533d83cfcd71e.png" alt="e_2 = \frac{2 I_{xy}}{I_{xx} + I_{yy}}"/></p>
+<p>July 28:
+Clean-up and removing the treecorr files</p>
+<dl class="function">
+<dt id="covariance.cov">
+<code class="descclassname">covariance.</code><code class="descname">cov</code><span class="sig-paren">(</span><em>xv</em>, <em>yv</em>, <em>sig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#cov"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.cov" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the covariance matrix for a given set of Delta x, Delta y and sigmas:</p>
+<p><img class="math" src="_images/math/be957669760a388651e8d77274aada0339c4f0dc.png" alt="\boldsymbol{\Sigma}_{ij} =  \langle \Delta x_i \Delta x_j \rangle"/></p>
+<p>This is equivalent to <img class="math" src="_images/math/d4ea21e1d1f90da83c091d50969543e75afc7bf0.png" alt="\xi(0)"/> for the exposure</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.create_cov_file">
+<code class="descclassname">covariance.</code><code class="descname">create_cov_file</code><span class="sig-paren">(</span><em>fits</em>, <em>output_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#create_cov_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.create_cov_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Catalog of covariances for each exposure</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.data_to_dump">
+<code class="descclassname">covariance.</code><code class="descname">data_to_dump</code><span class="sig-paren">(</span><em>fits</em>, <em>exposure</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#data_to_dump"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.data_to_dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>This copies the residuals from the SAVE file and saves in a manner that xi_full can use</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.ellipticity">
+<code class="descclassname">covariance.</code><code class="descname">ellipticity</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#ellipticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.ellipticity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes and plots the ellipticity vector (defined above) for the two-point correlation function, for a given catalog</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.get_Expo">
+<code class="descclassname">covariance.</code><code class="descname">get_Expo</code><span class="sig-paren">(</span><em>fits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#get_Expo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.get_Expo" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function finds all the exposures in a given SAVE residual file, coming from Gary’s astrometric codes. This is the first step into computing xi</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.get_data">
+<code class="descclassname">covariance.</code><code class="descname">get_data</code><span class="sig-paren">(</span><em>fits</em>, <em>expo</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copies the data needed for both xi and sigma</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.hist">
+<code class="descclassname">covariance.</code><code class="descname">hist</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes three histograms of the different measures we can produce from the correlation function and the covariance matrix</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.integrate_array">
+<code class="descclassname">covariance.</code><code class="descname">integrate_array</code><span class="sig-paren">(</span><em>r</em>, <em>xi</em>, <em>r_min</em>, <em>r_max</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#integrate_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.integrate_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes</p>
+<p><img class="math" src="_images/math/0607bfe6daccae70cdff2589970d708b4264f191.png" alt="\int_{r_\mathrm{min}}^{r_\mathbf{max}} \mathrm{d}r \, \xi(r)"/></p>
+<p>for a given function <img class="math" src="_images/math/c6e4ff26b53b5d382fc8d80b602a9c95be59adc4.png" alt="\xi"/>. The array of this function must be indexed in the same manner as the r array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.plot_xi_average_full">
+<code class="descclassname">covariance.</code><code class="descname">plot_xi_average_full</code><span class="sig-paren">(</span><em>fits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#plot_xi_average_full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.plot_xi_average_full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the average two-point correlation function for all exposures in a given file. It plots all the components (E, B, +, -, x, y, c) and averages out over all the computed values
+In the end, we get a plot with everything showing up beautifully</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.r_gauss">
+<code class="descclassname">covariance.</code><code class="descname">r_gauss</code><span class="sig-paren">(</span><em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#r_gauss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.r_gauss" title="Permalink to this definition">¶</a></dt>
+<dd><p><img class="math" src="_images/math/c48df82e1094945204f503f2869e001378257250.png" alt="r \cdot W(r)"/>, where <img class="math" src="_images/math/cbe4fe8710bcb55536683e5b9ac25e96ffc49662.png" alt="W(r) = \exp\left(-\frac{r^2}{2 (1\text{arcsec})^2}\right)"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.xi_av_cat">
+<code class="descclassname">covariance.</code><code class="descname">xi_av_cat</code><span class="sig-paren">(</span><em>fits</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#xi_av_cat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.xi_av_cat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a catalog of the different measures of the two-point function and the covariance matrix for each exposure. 
+We compute <img class="math" src="_images/math/b9f29e83fbb3fdb1462a7d7670d563264f056767.png" alt="\langle \xi \rangle"/> for <img class="math" src="_images/math/cdfe05ec22b78916585f45d603c0367495f7fbde.png" alt="-5 &lt; \log r &lt; -4.5"/>, a region where the function is almost constant, for all the possible combinations we have</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="covariance.xi_full">
+<code class="descclassname">covariance.</code><code class="descname">xi_full</code><span class="sig-paren">(</span><em>fits</em>, <em>min_r=0.001388888888888889</em>, <em>max_r=1.5</em>, <em>dlogr=0.05</em>, <em>order=3</em>, <em>keepnan=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/covariance.html#xi_full"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#covariance.xi_full" title="Permalink to this definition">¶</a></dt>
+<dd><p>This computes all the two-point correlation functions for a given exposure.</p>
+<p>We first find a third order 2D polynomial that interpolates the data and subtract it from the data, to remove unwanted distortions
+Then, we proceed to find all the pairs of points in each bin. We compute, then, &lt;xx&gt;, &lt;xy&gt;, &lt;yx&gt; and &lt;yy&gt;, which allows us to get &lt;xi_p&gt;, &lt;xi_x,y&gt;, &lt;xi_z&gt; and Im(&lt;xi_p&gt;)
+After that, we rotate vv = xx - yy + i(xy + yx) into radial and perpendicular parts, so we can get the phase factor for &lt;xi_m&gt; and &lt;xi_c&gt;.
+Finally, from the analytical expressions, we compute &lt;xi_E,B&gt;. Returns all these functions plus log(r).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-linking">
+<span id="linking-and-orbits"></span><h3>Linking and Orbits<a class="headerlink" href="#module-linking" title="Permalink to this headline">¶</a></h3>
+<p>Author: Pedro Bernardinelli
+Date: Sep. 12, 2017</p>
+<p>Code for linking single epoch detections into pairs, triplets and eventually orbits.</p>
+<dl class="class">
+<dt id="linking.Candidate">
+<em class="property">class </em><code class="descclassname">linking.</code><code class="descname">Candidate</code><span class="sig-paren">(</span><em>*detections</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Candidate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Candidate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Candidate class, consisting of a bunch of Detection objects added together. We can also make this work from the Pair class, or even from multiple Candidate objects.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="linking.Detection">
+<em class="property">class </em><code class="descclassname">linking.</code><code class="descname">Detection</code><span class="sig-paren">(</span><em>table</em>, <em>b0=-0.25769349667029062</em>, <em>l0=0.39218362877343987</em>, <em>t0=56000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Detection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Detection" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class corresponds to a detection. A detection is composed of a (RA, DEC) pair (then transformed to ecliptic and tangent plane angles), a detection time (in mjd),
+a magnitude and its measurement error, an exposure number and an error in position. As an input for the class, we need a single line of the output (exp[keys[i]].e. single epoch)
+catalog in astropy table format, plus the constants b0, l0 and t0</p>
+<dl class="method">
+<dt id="linking.Detection.covariance_matrix">
+<code class="descname">covariance_matrix</code><span class="sig-paren">(</span><em>exposures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Detection.covariance_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Detection.covariance_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the error (exp[keys[i]].e. covariance) matrix from the position, according to the atmospheric part from the exposure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Detection.to_bl">
+<code class="descname">to_bl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Detection.to_bl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Detection.to_bl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from <img class="math" src="_images/math/0768a9cb4cbc431256f27d162521af8b2c458666.png" alt="(\alpha,\delta) \mapsto (b,\ell)"/></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Detection.to_theta">
+<code class="descname">to_theta</code><span class="sig-paren">(</span><em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Detection.to_theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Detection.to_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from <img class="math" src="_images/math/ed8f6c866e3084fce6afcc2f4cb0759f447c49af.png" alt="(b,\ell) \mapsto (\theta_x,\theta_y)"/></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="linking.Exposure">
+<em class="property">class </em><code class="descclassname">linking.</code><code class="descname">Exposure</code><span class="sig-paren">(</span><em>table</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Corresponds to an exposure, with the correspondent detections, covariance/correlation matrix, Earth position and kD tree</p>
+<dl class="method">
+<dt id="linking.Exposure.compute_earth_position">
+<code class="descname">compute_earth_position</code><span class="sig-paren">(</span><em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.compute_earth_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.compute_earth_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the position of the Earth with reference to the rotated barycentric system at the time of the start of the exposure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.find_detections">
+<code class="descname">find_detections</code><span class="sig-paren">(</span><em>detections</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.find_detections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.find_detections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds all detections in the exposures in a given list of detections</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.get_points">
+<code class="descname">get_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.get_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.get_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the tangent plane coordinates of all the detections, so that we can use them in the kD tree</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.make_kdtree">
+<code class="descname">make_kdtree</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.make_kdtree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.make_kdtree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds the cKDTree object for the exposure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.query_exposure">
+<code class="descname">query_exposure</code><span class="sig-paren">(</span><em>point</em>, <em>radius</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.query_exposure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.query_exposure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries the exposure for a detection on the ball <img class="math" src="_images/math/fa7fd1c128816645bbe1eb1ea0880cb636d9f46c.png" alt="\mathcal{C}(\mathrm{point}, \mathrm{radius})"/>, returns all the detections in this ball</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.to_bl">
+<code class="descname">to_bl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.to_bl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.to_bl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from <img class="math" src="_images/math/0768a9cb4cbc431256f27d162521af8b2c458666.png" alt="(\alpha,\delta) \mapsto (b,\ell)"/></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Exposure.to_theta">
+<code class="descname">to_theta</code><span class="sig-paren">(</span><em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Exposure.to_theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Exposure.to_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts from <img class="math" src="_images/math/ed8f6c866e3084fce6afcc2f4cb0759f447c49af.png" alt="(b,\ell) \mapsto (\theta_x,\theta_y)"/></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.J_ec_to_tp">
+<code class="descclassname">linking.</code><code class="descname">J_ec_to_tp</code><span class="sig-paren">(</span><em>b</em>, <em>l</em>, <em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#J_ec_to_tp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.J_ec_to_tp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jacobian matrix of the <img class="math" src="_images/math/d4f5737a0a2601663bc7ba93f55308cd5c98b340.png" alt="(b,\ell)"/> to <img class="math" src="_images/math/0611b9beab7cd9ae77ea8e10704282808d195be7.png" alt="(\theta_x,\theta_y)"/> transformation, for a given reference <img class="math" src="_images/math/65a178ca2e0013ffc63fd8cc8e2e63fe0fdb6d32.png" alt="(b_0, \ell_0)"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.J_eq_to_ec">
+<code class="descclassname">linking.</code><code class="descname">J_eq_to_ec</code><span class="sig-paren">(</span><em>alpha</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#J_eq_to_ec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.J_eq_to_ec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jacobian matrix of the <img class="math" src="_images/math/4954b43b0b5f1e11474fded621225d34dae0e5b0.png" alt="(\alpha,\delta)"/> to <img class="math" src="_images/math/d4f5737a0a2601663bc7ba93f55308cd5c98b340.png" alt="(b,\ell)"/> transformation</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="linking.Pair">
+<em class="property">class </em><code class="descclassname">linking.</code><code class="descname">Pair</code><span class="sig-paren">(</span><em>Det1</em>, <em>Det2</em>, <em>b0=-0.25769349667029062</em>, <em>l0=0.39218362877343987</em>, <em>t0=56000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for pairs of detections, with methods to estimate <img class="math" src="_images/math/146950acabe689479d4b3d268e4fbfed76b70660.png" alt="\alpha, \beta, \dot{\alpha},\dot{\beta}"/> and the search region for a different MJD</p>
+<dl class="method">
+<dt id="linking.Pair.alpha_est_pair">
+<code class="descname">alpha_est_pair</code><span class="sig-paren">(</span><em>gamma</em>, <em>exposures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair.alpha_est_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair.alpha_est_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pair version of the <img class="math" src="_images/math/49bc1261ba085a158e8b5ac90283afb60b64486b.png" alt="(\alpha,\beta,\dot{\alpha},\dot{\beta})"/> fit, given two measurements <img class="math" src="_images/math/be2ad70e4e83168c01a288c229adb9671427bd7a.png" alt="\vec{\theta}_{1,2}"/>, 
+finds the <img class="math" src="_images/math/726713f839045691fc400167a76bf4ea0f037844.png" alt="\vec{\alpha}"/> parameter that best describes it, for a fixed <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Pair.find_params">
+<code class="descname">find_params</code><span class="sig-paren">(</span><em>gamma</em>, <em>t0=56000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair.find_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair.find_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the parameters <img class="math" src="_images/math/2301fd3703c74685a00d4bfdc5525bfc802a3d07.png" alt="\alpha,\beta,\dot{\alpha},\dot{\beta}"/> for a fixed <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Pair.search_position">
+<code class="descname">search_position</code><span class="sig-paren">(</span><em>t3</em>, <em>gamma</em>, <em>b0</em>, <em>l0</em>, <em>t0</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair.search_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair.search_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicts the position of the third detection at a time t3</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Pair.search_radius">
+<code class="descname">search_radius</code><span class="sig-paren">(</span><em>t3</em>, <em>gamma</em>, <em>b0=-0.25769349667029062</em>, <em>l0=0.39218362877343987</em>, <em>t0=56000</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair.search_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair.search_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the search radius for a third observation at a time t3</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="linking.Pair.theta_pair">
+<code class="descname">theta_pair</code><span class="sig-paren">(</span><em>exposures</em>, <em>gamma</em>, <em>gamma_dot</em>, <em>r</em>, <em>t</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#Pair.theta_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.Pair.theta_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a pair, a set of parameters <img class="math" src="_images/math/49bc1261ba085a158e8b5ac90283afb60b64486b.png" alt="(\alpha,\beta,\dot{\alpha},\dot{\beta})"/> coming from the pair fit, finds the position of a new detection at a 
+time <img class="math" src="_images/math/5ec053cf70dc1c98cc297322250569eda193e7a4.png" alt="t"/> with a fixed <img class="math" src="_images/math/f80bd6351ef52a1295616ab74a34bc19bcd89fa8.png" alt="(\gamma, \dot{\gamma})"/>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.alpha_est">
+<code class="descclassname">linking.</code><code class="descname">alpha_est</code><span class="sig-paren">(</span><em>theta_1</em>, <em>theta_2</em>, <em>t1</em>, <em>t2</em>, <em>gamma</em>, <em>t0</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#alpha_est"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.alpha_est" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given two measurements <img class="math" src="_images/math/be2ad70e4e83168c01a288c229adb9671427bd7a.png" alt="\vec{\theta}_{1,2}"/>, finds the <img class="math" src="_images/math/726713f839045691fc400167a76bf4ea0f037844.png" alt="\vec{\alpha}"/> parameter that best describes it, for a fixed <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.alpha_est_pair">
+<code class="descclassname">linking.</code><code class="descname">alpha_est_pair</code><span class="sig-paren">(</span><em>pair</em>, <em>gamma</em>, <em>exposures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#alpha_est_pair"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.alpha_est_pair" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pair version of the <img class="math" src="_images/math/49bc1261ba085a158e8b5ac90283afb60b64486b.png" alt="(\alpha,\beta,\dot{\alpha},\dot{\beta})"/> fit, given two measurements <img class="math" src="_images/math/be2ad70e4e83168c01a288c229adb9671427bd7a.png" alt="\vec{\theta}_{1,2}"/>, 
+finds the <img class="math" src="_images/math/726713f839045691fc400167a76bf4ea0f037844.png" alt="\vec{\alpha}"/> parameter that best describes it, for a fixed <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.b_l">
+<code class="descclassname">linking.</code><code class="descname">b_l</code><span class="sig-paren">(</span><em>alpha</em>, <em>delta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#b_l"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.b_l" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <img class="math" src="_images/math/4954b43b0b5f1e11474fded621225d34dae0e5b0.png" alt="(\alpha,\delta)"/> (RA, DEC) measurement, finds the corresponding <img class="math" src="_images/math/d4f5737a0a2601663bc7ba93f55308cd5c98b340.png" alt="(b,\ell)"/> angle</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.compute_distance">
+<code class="descclassname">linking.</code><code class="descname">compute_distance</code><span class="sig-paren">(</span><em>theta_1</em>, <em>theta_2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#compute_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.compute_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes 
+<img class="math" src="_images/math/c5c1ab59b981e56d05f5d3855370a621f88f03b9.png" alt="||\vec{\theta}_1  - \vec{\theta}_2||"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.cov_dot">
+<code class="descclassname">linking.</code><code class="descname">cov_dot</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>dgamma</em>, <em>dt</em>, <em>Sigma_tp_1</em>, <em>Sigma_tp_2</em>, <em>r</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#cov_dot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.cov_dot" title="Permalink to this definition">¶</a></dt>
+<dd><p>For two measurements 1 and 2, with covariance matrices (in <img class="math" src="_images/math/3be04d4207434584251f6921820c24ac9fa8c6f1.png" alt="\theta"/> space) <img class="math" src="_images/math/9b63a3be89c1db44208d79031cf7c4b70199c750.png" alt="\Sigma_{1,2}"/>, finds the error matrix in 
+the estimated parameters <img class="math" src="_images/math/2301fd3703c74685a00d4bfdc5525bfc802a3d07.png" alt="\alpha,\beta,\dot{\alpha},\dot{\beta}"/>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.cov_theta">
+<code class="descclassname">linking.</code><code class="descname">cov_theta</code><span class="sig-paren">(</span><em>t1</em>, <em>t2</em>, <em>t3</em>, <em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>alpha_dot</em>, <em>beta_dot</em>, <em>dgamma</em>, <em>Sigma_tp_1</em>, <em>Sigma_tp_2</em>, <em>b0</em>, <em>l0</em>, <em>t0</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#cov_theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.cov_theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>For two measurements 1 and 2, with covariance matrices (in <img class="math" src="_images/math/3be04d4207434584251f6921820c24ac9fa8c6f1.png" alt="\theta"/> space) <img class="math" src="_images/math/9b63a3be89c1db44208d79031cf7c4b70199c750.png" alt="\Sigma_{1,2}"/>, finds the region where a third measurement
+could be, defined as the propagation of the error matrix from the estimated parameters. That is, we first use 1 and 2 to find <img class="math" src="_images/math/f32d08a48768eaa4aca392f12d22d6cab970dd21.png" alt="\Sigma_{\vec{\alpha}}"/>
+and then use this matrix to find how it affects a measurement at a time t3</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="linking.d_exp">
+<code class="descclassname">linking.</code><code class="descname">d_exp</code><em class="property"> = 0.010092167846991639</em><a class="headerlink" href="#linking.d_exp" title="Permalink to this definition">¶</a></dt>
+<dd><p>—————————- Data Loading and Saving —————————-</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.earth_position">
+<code class="descclassname">linking.</code><code class="descname">earth_position</code><span class="sig-paren">(</span><em>date</em>, <em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#earth_position"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.earth_position" title="Permalink to this definition">¶</a></dt>
+<dd><p>Uses the skyfield library to read a JPL ephemeris and find the position of the telescope according to a reference frame centered at the Sun and rotated
+by an angle <img class="math" src="_images/math/65a178ca2e0013ffc63fd8cc8e2e63fe0fdb6d32.png" alt="(b_0, \ell_0)"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.find_matches">
+<code class="descclassname">linking.</code><code class="descname">find_matches</code><span class="sig-paren">(</span><em>gamma</em>, <em>savename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#find_matches"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.find_matches" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pair making algorithm for a given <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/>. Will define it here soon</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.gamma_dot_bind">
+<code class="descclassname">linking.</code><code class="descname">gamma_dot_bind</code><span class="sig-paren">(</span><em>gamma</em>, <em>alpha_dot</em>, <em>beta_dot</em>, <em>cos_beta</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#gamma_dot_bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.gamma_dot_bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a limiting value for <img class="math" src="_images/math/406b2ec1c7be79bfb0cd99ca4d9db558b64bf968.png" alt="\dot{\gamma}"/>, given by</p>
+<p><img class="math" src="_images/math/00a5f6f92c0b734c16de34fd1d7d84550fb37dcf.png" alt="\dot{\gamma}_{\text{bind}}^2 = 8 \pi^2 \gamma^3(1 + \gamma^2 - 2 \gamma \cos\beta_0)^{-1/2} - \dot{\alpha}^2 - \dot{\beta}^2"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.load_data">
+<code class="descclassname">linking.</code><code class="descname">load_data</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a pickled object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.load_data_h">
+<code class="descclassname">linking.</code><code class="descname">load_data_h</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#load_data_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.load_data_h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads a pickled object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.make_detections">
+<code class="descclassname">linking.</code><code class="descname">make_detections</code><span class="sig-paren">(</span><em>filename</em>, <em>savefile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#make_detections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.make_detections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms a list of detections in filename into a pickled file that has a list of Detection objects</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.make_exposures">
+<code class="descclassname">linking.</code><code class="descname">make_exposures</code><span class="sig-paren">(</span><em>exposure_table</em>, <em>detections</em>, <em>savefile</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#make_exposures"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.make_exposures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transforms a list of exposures in exposure_table and detections into a pickled file that has a list of Exposure objects</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.max_proper">
+<code class="descclassname">linking.</code><code class="descname">max_proper</code><span class="sig-paren">(</span><em>gamma</em>, <em>t1</em>, <em>t2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#max_proper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.max_proper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Max distance that proper motion can make an object travel and still be in a bound orbit:</p>
+<p><img class="math" src="_images/math/7a3f34065755682c9c049e8829a198c85adb7e26.png" alt="d_{\max} = 2 \sqrt{2\gamma^3}\Delta t"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.save_data">
+<code class="descclassname">linking.</code><code class="descname">save_data</code><span class="sig-paren">(</span><em>data</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#save_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.save_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a list of objects with the desired filename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.save_data_h">
+<code class="descclassname">linking.</code><code class="descname">save_data_h</code><span class="sig-paren">(</span><em>data</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#save_data_h"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.save_data_h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves a list of objects with the desired filename</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.search_radius">
+<code class="descclassname">linking.</code><code class="descname">search_radius</code><span class="sig-paren">(</span><em>t1</em>, <em>t2</em>, <em>t3</em>, <em>gamma</em>, <em>Sigma_tp_1</em>, <em>Sigma_tp_2</em>, <em>b0</em>, <em>l0</em>, <em>t0</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#search_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.search_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the semi-major axis of the ellipse defined by the covariance matrix estimation from cov_theta</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.solar_elongation">
+<code class="descclassname">linking.</code><code class="descname">solar_elongation</code><span class="sig-paren">(</span><em>pair</em>, <em>exposures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#solar_elongation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.solar_elongation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the cosine of the angle <img class="math" src="_images/math/8ecb1fee83d40575dfd2b2ba283fc19003ad7bb4.png" alt="\beta_0"/> for a pair, corresponding to the solar elongation of the target at the time of the first detection:</p>
+<p><img class="math" src="_images/math/be50f5ef1271435d9b68b8e13cca36e3c0abf83e.png" alt="\cos\beta_0 = -\frac{(\alpha, \beta, 1) \cdot \mathbf{r}_0}{r_0 \sqrt{\alpha^2 + \beta^2 + 1}}"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.theta_def">
+<code class="descclassname">linking.</code><code class="descname">theta_def</code><span class="sig-paren">(</span><em>b</em>, <em>l</em>, <em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#theta_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.theta_def" title="Permalink to this definition">¶</a></dt>
+<dd><p>For a given <img class="math" src="_images/math/d4f5737a0a2601663bc7ba93f55308cd5c98b340.png" alt="(b,\ell)"/> angle, finds the corresponding <img class="math" src="_images/math/e62cbb513b46cfdc8323ba5eda705a8c581e1e5d.png" alt="\vec{\theta}"/> angle 
+as measured according to a reference <img class="math" src="_images/math/2c588dda7117b53e0a077cf3be692eedad44ec3f.png" alt="(b_0,\ell_0)"/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.theta_max">
+<code class="descclassname">linking.</code><code class="descname">theta_max</code><span class="sig-paren">(</span><em>t1</em>, <em>t2</em>, <em>r</em>, <em>r0</em>, <em>gamma</em>, <em>b0</em>, <em>l0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#theta_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.theta_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the maximum distance that an object at distance <img class="math" src="_images/math/3666981dc77862de77b6ecfcb64aad59b425cbaf.png" alt="\gamma"/> could have travelled between times 1 and 2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.theta_parallax">
+<code class="descclassname">linking.</code><code class="descname">theta_parallax</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>r</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#theta_parallax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.theta_parallax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the parallax-only evolution of the <img class="math" src="_images/math/3be04d4207434584251f6921820c24ac9fa8c6f1.png" alt="\theta"/> vector, defined by</p>
+<p><img class="math" src="_images/math/14a58c5244ff16e00c6de5f2b66ad1a92f595115.png" alt="\theta_x(t) = \frac{\alpha - \gamma x_E(t)}{1-\gamma z_E(t)},"/></p>
+<p><img class="math" src="_images/math/aa70efd5aa43d834d49a66570ac2d70f14c71a8e.png" alt="\theta_y(t) = \frac{\beta  - \gamma y_E(t)}{1-\gamma z_E(t)}."/></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.theta_parallax_vec">
+<code class="descclassname">linking.</code><code class="descname">theta_parallax_vec</code><span class="sig-paren">(</span><em>theta</em>, <em>gamma</em>, <em>r</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#theta_parallax_vec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.theta_parallax_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the parallax-only evolution of the <img class="math" src="_images/math/3be04d4207434584251f6921820c24ac9fa8c6f1.png" alt="\theta"/> vector, defined by</p>
+<p><img class="math" src="_images/math/14a58c5244ff16e00c6de5f2b66ad1a92f595115.png" alt="\theta_x(t) = \frac{\alpha - \gamma x_E(t)}{1-\gamma z_E(t)},"/></p>
+<p><img class="math" src="_images/math/aa70efd5aa43d834d49a66570ac2d70f14c71a8e.png" alt="\theta_y(t) = \frac{\beta  - \gamma y_E(t)}{1-\gamma z_E(t)}."/></p>
+<p>This version is vectorized and accepts a vector as an input.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="linking.theta_real">
+<code class="descclassname">linking.</code><code class="descname">theta_real</code><span class="sig-paren">(</span><em>alpha</em>, <em>beta</em>, <em>gamma</em>, <em>alpha_dot</em>, <em>beta_dot</em>, <em>gamma_dot</em>, <em>t</em>, <em>b</em>, <em>l</em>, <em>t0</em>, <em>r0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/linking.html#theta_real"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#linking.theta_real" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the full evolution of the <img class="math" src="_images/math/3be04d4207434584251f6921820c24ac9fa8c6f1.png" alt="\theta"/> vector without the gravitational contribution, given by</p>
+<p><img class="math" src="_images/math/7bc086ff6994bfd814e0fd55c6dba6a61517f298.png" alt="\theta_x(t) = \frac{\alpha + \dot{\alpha} t- \gamma x_E(t)}{1 + \dot{\gamma} t-\gamma z_E(t)}"/></p>
+<p><img class="math" src="_images/math/731a3b4a1a2631c323bd08225ddca06778ad89b2.png" alt="\theta_y(t) = \frac{\beta  + \dot{\beta}  t- \gamma y_E(t)}{1 + \dot{\gamma} t-\gamma z_E(t)}"/></p>
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,343 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>data_management &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>data_management</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for data_management</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">*Author: Pedro Bernardinelli*</span>
+
+<span class="sd">*Original: March 7, 2017 - Current: May 16, 2017*</span>
+
+<span class="sd">Data management and auxiliary functions for some of the modules and scripts developed so far.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">from</span> <span class="nn">pixmappy</span> <span class="k">import</span> <span class="n">Gnomonic</span> <span class="c1">#Gary&#39;s code for applying the astrometric solutions</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span> 
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<div class="viewcode-block" id="one_arc_sec"><a class="viewcode-back" href="../index.html#data_management.one_arc_sec">[docs]</a><span class="k">def</span> <span class="nf">one_arc_sec</span><span class="p">(</span><span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Finds one arc sec in for the Gnomonic projection centered around RA_0, DEC_0</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">Gnomonic</span><span class="p">(</span><span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">)</span><span class="o">.</span><span class="n">toXY</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+	<span class="n">y</span> <span class="o">=</span> <span class="n">Gnomonic</span><span class="p">(</span><span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">)</span><span class="o">.</span><span class="n">toXY</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="radec_to_gnomonic"><a class="viewcode-back" href="../index.html#data_management.radec_to_gnomonic">[docs]</a><span class="k">def</span> <span class="nf">radec_to_gnomonic</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Converts RA, DEC to x,y in gnomonic coordinates using pixmappy so we can use an Euclidean metric for the FoF</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">Gnomonic</span><span class="p">(</span><span class="n">ra_0</span><span class="p">,</span><span class="n">dec_0</span><span class="p">)</span><span class="o">.</span><span class="n">toXY</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span><span class="n">dec</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="add_gnom"><a class="viewcode-back" href="../index.html#data_management.add_gnom">[docs]</a><span class="k">def</span> <span class="nf">add_gnom</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">ra_0</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dec_0</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Opens and reads a (astropy Table) file and adds the gnomonic coordinate projection </span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+	<span class="n">sky_pos_euclidean</span> <span class="o">=</span> <span class="n">radec_to_gnomonic</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;RA&quot;</span><span class="p">],</span> <span class="n">table</span><span class="p">[</span><span class="s2">&quot;DEC&quot;</span><span class="p">],</span> <span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">)</span>
+	<span class="n">table</span><span class="p">[</span><span class="s1">&#39;X_GNOM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sky_pos_euclidean</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">table</span><span class="p">[</span><span class="s1">&#39;Y_GNOM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sky_pos_euclidean</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_id"><a class="viewcode-back" href="../index.html#data_management.write_id">[docs]</a><span class="k">def</span> <span class="nf">write_id</span><span class="p">(</span><span class="n">id_num</span><span class="p">,</span> <span class="n">matchid</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Adds the MATCH_ID for each group</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">matchid</span><span class="p">[</span><span class="n">group</span><span class="p">]</span> <span class="o">=</span> <span class="n">id_num</span> <span class="o">+</span> <span class="n">offset</span>
+	<span class="k">return</span> <span class="n">matchid</span></div>
+
+<div class="viewcode-block" id="add_group_information"><a class="viewcode-back" href="../index.html#data_management.add_group_information">[docs]</a><span class="k">def</span> <span class="nf">add_group_information</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">friends_list</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Given a FoF list of clusters, adds to the original table a &quot;MATCH_ID&quot; column with the group the point belongs to, </span>
+<span class="sd">	starting with &#39;offset&#39; as the first value. If file_name is a table object (instead of a string), saves to file named in name</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+		<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">table</span> <span class="o">=</span> <span class="n">file_name</span>
+	
+	<span class="n">group</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">friends_list</span><span class="p">]</span>
+	<span class="n">matchid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">))</span>
+
+	<span class="c1">#pool = mp.Pool()</span>
+
+	<span class="c1">#results.append(pool.map(partial(write_id, table=table, group=group, offset=offset), range(len(group))))</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)):</span>
+		<span class="n">matchid</span> <span class="o">=</span> <span class="n">write_id</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">matchid</span><span class="p">,</span> <span class="n">group</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">offset</span><span class="p">)</span>
+		
+	<span class="n">table</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">matchid</span>
+	<span class="n">table</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">)</span>
+	<span class="sd">&#39;&#39;&#39;table.write(file_name[:-5]+&#39;out.fits&#39;, overwrite=True)&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+		<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="save_file"><a class="viewcode-back" href="../index.html#data_management.save_file">[docs]</a><span class="k">def</span> <span class="nf">save_file</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">name</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Saves an astropy Table </span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="copy_data_gnom"><a class="viewcode-back" href="../index.html#data_management.copy_data_gnom">[docs]</a><span class="k">def</span> <span class="nf">copy_data_gnom</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Opens and reads a (astropy Table) file, returns the Gnomonic projection of RA, DEC</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">:</span>
+		<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">table</span> <span class="o">=</span> <span class="n">file</span>
+	<span class="n">gnom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;X_GNOM&#39;</span><span class="p">],</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;Y_GNOM&#39;</span><span class="p">]])</span>
+	<span class="k">return</span> <span class="n">gnom</span><span class="o">.</span><span class="n">T</span></div>
+
+
+
+<div class="viewcode-block" id="coadd_gnomonic"><a class="viewcode-back" href="../index.html#data_management.coadd_gnomonic">[docs]</a><span class="k">def</span> <span class="nf">coadd_gnomonic</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Adds a Gnomonic projection for the co-add catalog</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">coadd</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+	<span class="n">gnomonic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">radec_to_gnomonic</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;ALPHAWIN_J2000&#39;</span><span class="p">],</span> <span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;DELTAWIN_J2000&#39;</span><span class="p">],</span> <span class="n">ra_0</span><span class="p">,</span> <span class="n">dec_0</span><span class="p">))</span>
+	
+	<span class="n">xgnom</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">gnomonic</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;X_GNOM&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+	<span class="n">ygnom</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="n">gnomonic</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Y_GNOM&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+	<span class="n">vers</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Column</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gnomonic</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">*</span><span class="p">[</span><span class="s1">&#39;COADD&#39;</span><span class="p">],</span> <span class="n">name</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;VERSION&quot;</span><span class="p">))</span>
+
+	<span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;X_GNOM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xgnom</span>
+	<span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;Y_GNOM&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ygnom</span>
+	<span class="n">coadd</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vers</span>
+
+	<span class="n">coadd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="merge_tables"><a class="viewcode-back" href="../index.html#data_management.merge_tables">[docs]</a><span class="k">def</span> <span class="nf">merge_tables</span><span class="p">(</span><span class="n">table1</span><span class="p">,</span> <span class="n">table2</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">	Merges two different tables (i.e.: coadd and finalcut)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">data1</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">table1</span><span class="p">)</span>
+	<span class="n">data2</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">table2</span><span class="p">)</span>
+
+	<span class="n">merge</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">])</span>
+	<span class="k">del</span> <span class="n">data1</span>
+	<span class="k">del</span> <span class="n">data2</span>
+	<span class="k">del</span> <span class="n">merge</span><span class="p">[</span><span class="s1">&#39;FILENAME&#39;</span><span class="p">,</span><span class="s1">&#39;FILETYPE&#39;</span><span class="p">,</span><span class="s1">&#39;FLUX_AUTO_G&#39;</span><span class="p">,</span><span class="s1">&#39;FLUX_AUTO_R&#39;</span><span class="p">,</span><span class="s1">&#39;FLUX_AUTO_I&#39;</span><span class="p">,</span><span class="s1">&#39;FLUX_AUTO_Z&#39;</span><span class="p">,</span><span class="s1">&#39;FLUX_AUTO_Y&#39;</span><span class="p">]</span>
+	<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+	<span class="n">merge</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

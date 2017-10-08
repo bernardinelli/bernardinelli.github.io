@@ -1,0 +1,954 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>linking &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>linking</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for linking</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Pedro Bernardinelli</span>
+<span class="sd">Date: Sep. 12, 2017</span>
+
+<span class="sd">Code for linking single epoch detections into pairs, triplets and eventually orbits. </span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="k">import</span> <span class="n">spatial</span>
+<span class="kn">from</span>  <span class="nn">skyfield.api</span> <span class="k">import</span> <span class="n">load</span><span class="p">,</span> <span class="n">Topos</span>
+<span class="kn">from</span> <span class="nn">astropy.time</span> <span class="k">import</span> <span class="n">Time</span>
+<span class="kn">import</span> <span class="nn">hickle</span>
+<span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span> 
+<span class="kn">import</span> <span class="nn">gc</span> 
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">TODO:</span>
+<span class="sd">Actual algorithm.....</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">---------------------------- Constants ---------------------------- </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="n">epsilon</span> <span class="o">=</span> <span class="mf">23.4392811</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span> <span class="c1">#obliquity</span>
+<span class="n">alpha0</span> <span class="o">=</span> <span class="mf">26.24</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span> <span class="c1">#center of the zone?</span>
+<span class="n">dec0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">4.98</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span> <span class="c1">#center of the zone?</span>
+
+<span class="n">t0</span> <span class="o">=</span> <span class="mi">56000</span> <span class="c1">#change this to first detection of thing whenever we need</span>
+<span class="n">planets</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="s1">&#39;de421.bsp&#39;</span><span class="p">)</span>
+<span class="n">earth</span> <span class="o">=</span> <span class="n">planets</span><span class="p">[</span><span class="s1">&#39;earth&#39;</span><span class="p">]</span>
+<span class="n">ctio</span> <span class="o">=</span> <span class="n">Topos</span><span class="p">(</span><span class="s1">&#39;-30.16606 N&#39;</span><span class="p">,</span><span class="s1">&#39;70.81489 E&#39;</span><span class="p">,</span> <span class="n">elevation_m</span><span class="o">=</span><span class="mi">2215</span><span class="p">)</span>
+<span class="n">observer</span> <span class="o">=</span> <span class="n">earth</span> <span class="o">+</span> <span class="n">ctio</span> <span class="c1">#Hi DECam =) </span>
+
+<span class="n">time_skyfield</span> <span class="o">=</span> <span class="n">load</span><span class="o">.</span><span class="n">timescale</span><span class="p">()</span>  
+<span class="n">zone</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;2pt_and_cov.fits&#39;</span><span class="p">)</span>
+
+<span class="n">d_exp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.3</span><span class="p">)</span><span class="o">/</span><span class="mi">180</span>
+
+<span class="c1">#Table with the correlation functions and covariance matrices of all exposures</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">---------------------------- Data Loading and Saving ---------------------------- </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="save_data"><a class="viewcode-back" href="../index.html#linking.save_data">[docs]</a><span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Saves a list of objects with the desired filename</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+		<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="load_data"><a class="viewcode-back" href="../index.html#linking.load_data">[docs]</a><span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Loads a pickled object</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="save_data_h"><a class="viewcode-back" href="../index.html#linking.save_data_h">[docs]</a><span class="k">def</span> <span class="nf">save_data_h</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Saves a list of objects with the desired filename</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">hickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s1">&#39;gzip&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="load_data_h"><a class="viewcode-back" href="../index.html#linking.load_data_h">[docs]</a><span class="k">def</span> <span class="nf">load_data_h</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Loads a pickled object</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">hickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">---------------------------- Coordinate Transformations ---------------------------- </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="b_l"><a class="viewcode-back" href="../index.html#linking.b_l">[docs]</a><span class="k">def</span> <span class="nf">b_l</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	For a given :math:`(\\alpha,\\delta)` (RA, DEC) measurement, finds the corresponding :math:`(b,\\ell)` angle</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
+	<span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)))</span>
+	<span class="k">return</span> <span class="n">b</span><span class="p">,</span><span class="n">l</span></div>
+
+<div class="viewcode-block" id="theta_def"><a class="viewcode-back" href="../index.html#linking.theta_def">[docs]</a><span class="k">def</span> <span class="nf">theta_def</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	For a given :math:`(b,\\ell)` angle, finds the corresponding :math:`\\vec{\\theta}` angle </span>
+<span class="sd">	as measured according to a reference :math:`(b_0,\\ell_0)`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span>
+	<span class="n">theta_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span><span class="o">/</span> <span class="n">den</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span>
+	<span class="n">theta_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span> <span class="o">-</span> <span class="n">l0</span><span class="p">))</span><span class="o">/</span><span class="n">den</span>
+	<span class="k">return</span> <span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span></div>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">---------------------------- Constant ----------------------------</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="n">b0</span><span class="p">,</span> <span class="n">l0</span> <span class="o">=</span> <span class="n">b_l</span><span class="p">(</span><span class="n">alpha0</span><span class="p">,</span> <span class="n">dec0</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">---------------------------- Definitions ---------------------------- </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="earth_position"><a class="viewcode-back" href="../index.html#linking.earth_position">[docs]</a><span class="k">def</span> <span class="nf">earth_position</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Uses the skyfield library to read a JPL ephemeris and find the position of the telescope according to a reference frame centered at the Sun and rotated</span>
+<span class="sd">	by an angle :math:`(b_0, \\ell_0)`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">time</span> <span class="o">=</span>  <span class="n">time_skyfield</span><span class="o">.</span><span class="n">from_astropy</span><span class="p">(</span><span class="n">Time</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;mjd&#39;</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="s1">&#39;utc&#39;</span><span class="p">))</span>
+	<span class="n">R_bl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l0</span><span class="p">),</span> <span class="mi">0</span><span class="p">],[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l0</span><span class="p">)],[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l0</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l0</span><span class="p">)]])</span>
+
+	<span class="k">return</span> <span class="n">R_bl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">observer</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">time</span><span class="p">)</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">au</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="theta_parallax"><a class="viewcode-back" href="../index.html#linking.theta_parallax">[docs]</a><span class="k">def</span> <span class="nf">theta_parallax</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Calculates the parallax-only evolution of the :math:`\\theta` vector, defined by </span>
+
+<span class="sd">	:math:`\\theta_x(t) = \\frac{\\alpha - \\gamma x_E(t)}{1-\\gamma z_E(t)},`</span>
+
+<span class="sd">	:math:`\\theta_y(t) = \\frac{\\beta  - \\gamma y_E(t)}{1-\\gamma z_E(t)}.`</span>
+<span class="sd">	&#39;&#39;&#39;</span>			
+	<span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">r0</span>
+	<span class="n">theta_x</span> <span class="o">=</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="n">theta_y</span> <span class="o">=</span> <span class="p">(</span><span class="n">beta</span>  <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="k">return</span> <span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span></div>
+
+<div class="viewcode-block" id="theta_parallax_vec"><a class="viewcode-back" href="../index.html#linking.theta_parallax_vec">[docs]</a><span class="k">def</span> <span class="nf">theta_parallax_vec</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Calculates the parallax-only evolution of the :math:`\\theta` vector, defined by </span>
+
+<span class="sd">	:math:`\\theta_x(t) = \\frac{\\alpha - \\gamma x_E(t)}{1-\\gamma z_E(t)},`</span>
+
+<span class="sd">	:math:`\\theta_y(t) = \\frac{\\beta  - \\gamma y_E(t)}{1-\\gamma z_E(t)}.`</span>
+
+<span class="sd">	This version is vectorized and accepts a vector as an input.</span>
+<span class="sd">	&#39;&#39;&#39;</span>			
+	<span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">r0</span>
+	<span class="n">theta_n</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[:</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="k">return</span> <span class="n">theta_n</span></div>
+
+<div class="viewcode-block" id="theta_real"><a class="viewcode-back" href="../index.html#linking.theta_real">[docs]</a><span class="k">def</span> <span class="nf">theta_real</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">alpha_dot</span><span class="p">,</span> <span class="n">beta_dot</span><span class="p">,</span> <span class="n">gamma_dot</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Calculates the full evolution of the :math:`\\theta` vector without the gravitational contribution, given by</span>
+
+<span class="sd">	:math:`\\theta_x(t) = \\frac{\\alpha + \\dot{\\alpha} t- \\gamma x_E(t)}{1 + \\dot{\\gamma} t-\\gamma z_E(t)}`</span>
+
+<span class="sd">	:math:`\\theta_y(t) = \\frac{\\beta  + \\dot{\\beta}  t- \\gamma y_E(t)}{1 + \\dot{\\gamma} t-\\gamma z_E(t)}`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+
+	<span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span><span class="n">r0</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">alpha_dot</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">y</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">+</span> <span class="n">beta_dot</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">z</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">gamma_dot</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">x</span><span class="o">/</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="o">/</span><span class="n">z</span></div>
+
+
+
+<div class="viewcode-block" id="theta_max"><a class="viewcode-back" href="../index.html#linking.theta_max">[docs]</a><span class="k">def</span> <span class="nf">theta_max</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes the maximum distance that an object at distance :math:`\\gamma` could have travelled between times 1 and 2</span>
+<span class="sd">	&#39;&#39;&#39;</span>	
+	<span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span>
+	<span class="n">d_proper</span> <span class="o">=</span> <span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mf">2.</span><span class="o">*</span><span class="n">gamma</span><span class="o">**</span><span class="mf">3.</span><span class="o">*</span><span class="n">dt</span><span class="o">**</span><span class="mf">2.</span>
+
+	<span class="n">dr</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">r0</span>
+
+	<span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+	<span class="n">d_parallax</span> <span class="o">=</span> <span class="n">gamma</span><span class="o">**</span><span class="mf">3.</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mf">2.</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+	<span class="n">d_cross</span> <span class="o">=</span> <span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="mf">3.</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">d_proper</span> <span class="o">+</span> <span class="n">d_parallax</span> <span class="o">+</span> <span class="n">d_cross</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="cov_dot"><a class="viewcode-back" href="../index.html#linking.cov_dot">[docs]</a><span class="k">def</span> <span class="nf">cov_dot</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">dgamma</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">Sigma_tp_2</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	For two measurements 1 and 2, with covariance matrices (in :math:`\\theta` space) :math:`\\Sigma_{1,2}`, finds the error matrix in </span>
+<span class="sd">	the estimated parameters :math:`\\alpha,\\beta,\\dot{\\alpha},\\dot{\\beta}`. </span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">gamma</span> <span class="o">-</span> <span class="n">dt</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">alpha</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">gamma</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">gamma</span> <span class="o">-</span> <span class="n">dt</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="n">dt</span><span class="p">,</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">beta</span><span class="o">*</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">dt</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">gamma</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)]])</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bmat</span><span class="p">([[</span><span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Sigma_tp_1</span><span class="p">)],[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Sigma_tp_2</span><span class="p">),</span><span class="n">Sigma_tp_2</span><span class="p">]])</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">g_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">dgamma</span><span class="o">**</span><span class="mf">2.</span><span class="p">]])</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">Sigma</span><span class="p">,</span><span class="n">g_arr</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">))</span></div>
+
+
+
+
+<div class="viewcode-block" id="cov_theta"><a class="viewcode-back" href="../index.html#linking.cov_theta">[docs]</a><span class="k">def</span> <span class="nf">cov_theta</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">alpha_dot</span><span class="p">,</span> <span class="n">beta_dot</span><span class="p">,</span> <span class="n">dgamma</span><span class="p">,</span> <span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">Sigma_tp_2</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	For two measurements 1 and 2, with covariance matrices (in :math:`\\theta` space) :math:`\\Sigma_{1,2}`, finds the region where a third measurement</span>
+<span class="sd">	could be, defined as the propagation of the error matrix from the estimated parameters. That is, we first use 1 and 2 to find :math:`\\Sigma_{\\vec{\\alpha}}`</span>
+<span class="sd">	and then use this matrix to find how it affects a measurement at a time t3</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">dt</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span> 
+	<span class="n">r</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="n">t3</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="n">r0</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">-</span> <span class="n">r0</span> 
+	<span class="n">t3</span> <span class="o">=</span> <span class="p">(</span><span class="n">t3</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span> 
+
+	<span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t3</span><span class="o">/</span><span class="p">(</span><span class="mf">1.</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="n">t3</span> <span class="o">*</span> <span class="n">alpha_dot</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">gamma</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t3</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">),</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">beta</span> <span class="o">+</span> <span class="n">t3</span> <span class="o">*</span> <span class="n">beta_dot</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">]])</span>
+
+	<span class="n">Sig_dot</span> <span class="o">=</span> <span class="n">cov_dot</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">dgamma</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">Sigma_tp_2</span><span class="p">,</span> <span class="n">r2</span><span class="p">)</span>
+	<span class="n">g_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">dgamma</span><span class="o">**</span><span class="mf">2.</span><span class="p">]])</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bmat</span><span class="p">([[</span><span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Sigma_tp_1</span><span class="p">)],[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">Sig_dot</span><span class="p">),</span> <span class="n">Sig_dot</span><span class="p">]])</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+	<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">Sigma</span><span class="p">,</span><span class="n">g_arr</span><span class="p">))</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Sigma</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="search_radius"><a class="viewcode-back" href="../index.html#linking.search_radius">[docs]</a><span class="k">def</span> <span class="nf">search_radius</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">Sigma_tp_2</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Finds the semi-major axis of the ellipse defined by the covariance matrix estimation from cov_theta</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">sigma</span> <span class="o">=</span> <span class="n">cov_theta</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">Sigma_tp_1</span><span class="p">,</span> <span class="n">Sigma_tp_2</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">)</span>
+	<span class="n">eig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">sigma</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">eig</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">eig</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="max_proper"><a class="viewcode-back" href="../index.html#linking.max_proper">[docs]</a><span class="k">def</span> <span class="nf">max_proper</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Max distance that proper motion can make an object travel and still be in a bound orbit:</span>
+
+<span class="sd">	:math:`d_{\\max} = 2 \\sqrt{2\\gamma^3}\\Delta t`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t1</span><span class="p">)</span><span class="o">/</span><span class="mi">365</span></div>
+
+<div class="viewcode-block" id="alpha_est"><a class="viewcode-back" href="../index.html#linking.alpha_est">[docs]</a><span class="k">def</span> <span class="nf">alpha_est</span><span class="p">(</span><span class="n">theta_1</span><span class="p">,</span> <span class="n">theta_2</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Given two measurements :math:`\\vec{\\theta}_{1,2}`, finds the :math:`\\vec{\\alpha}` parameter that best describes it, for a fixed :math:`\\gamma`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r1</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+
+	<span class="n">r1</span> <span class="o">=</span> <span class="n">r1</span> <span class="o">-</span> <span class="n">r0</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">-</span> <span class="n">r0</span> 
+	<span class="n">t1</span> <span class="o">=</span> <span class="p">(</span><span class="n">t1</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span>
+	<span class="n">t2</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span>
+
+	<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t2</span><span class="p">]])</span>
+	<span class="n">M_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+	<span class="n">theta1_p</span> <span class="o">=</span> <span class="n">theta_1</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r1</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+	<span class="n">theta2_p</span> <span class="o">=</span> <span class="n">theta_2</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> <span class="n">gamma</span><span class="o">*</span><span class="n">r2</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+	<span class="n">theta_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bmat</span><span class="p">([</span><span class="n">theta1_p</span><span class="p">,</span> <span class="n">theta2_p</span><span class="p">])</span>
+
+	<span class="n">params</span> <span class="o">=</span> <span class="n">M_inv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">theta_v</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="alpha_est_pair"><a class="viewcode-back" href="../index.html#linking.alpha_est_pair">[docs]</a><span class="k">def</span> <span class="nf">alpha_est_pair</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">exposures</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Pair version of the :math:`(\\alpha,\\beta,\\dot{\\alpha},\\dot{\\beta})` fit, given two measurements :math:`\\vec{\\theta}_{1,2}`, </span>
+<span class="sd">	finds the :math:`\\vec{\\alpha}` parameter that best describes it, for a fixed :math:`\\gamma`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r1</span> <span class="o">=</span> <span class="n">exposures</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+	<span class="n">r2</span> <span class="o">=</span> <span class="n">exposures</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+
+	<span class="n">dr</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">-</span> <span class="n">r1</span>
+	<span class="n">dt</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">mjd</span> <span class="o">-</span> <span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">mjd</span>
+	<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">]])</span>
+	<span class="n">M_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+	<span class="n">theta1_p</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">theta</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+	<span class="n">theta2_p</span> <span class="o">=</span> <span class="n">pair</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">theta</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+	<span class="n">theta_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bmat</span><span class="p">([</span><span class="n">theta1_p</span><span class="p">,</span> <span class="n">theta2_p</span><span class="p">])</span>
+
+	<span class="n">params</span> <span class="o">=</span> <span class="n">M_inv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">theta_v</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">params</span></div>
+
+
+<div class="viewcode-block" id="J_eq_to_ec"><a class="viewcode-back" href="../index.html#linking.J_eq_to_ec">[docs]</a><span class="k">def</span> <span class="nf">J_eq_to_ec</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Jacobian matrix of the :math:`(\\alpha,\\delta)` to :math:`(b,\\ell)` transformation</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">))</span><span class="o">**</span><span class="mf">2.</span><span class="p">)</span>
+	<span class="n">J00</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span><span class="o">/</span><span class="n">den</span>
+	<span class="n">J01</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">))</span><span class="o">/</span><span class="n">den</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">delta</span><span class="p">)))</span><span class="o">**</span><span class="mf">2.</span>
+	<span class="n">J10</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">delta</span><span class="p">)))</span><span class="o">/</span><span class="n">den</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span><span class="o">**</span><span class="mf">2.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">epsilon</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
+	<span class="n">J11</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">den</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">J00</span><span class="p">,</span> <span class="n">J01</span><span class="p">],[</span><span class="n">J10</span><span class="p">,</span> <span class="n">J11</span><span class="p">]])</span></div>
+
+<div class="viewcode-block" id="J_ec_to_tp"><a class="viewcode-back" href="../index.html#linking.J_ec_to_tp">[docs]</a><span class="k">def</span> <span class="nf">J_ec_to_tp</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Jacobian matrix of the :math:`(b,\\ell)` to :math:`(\\theta_x,\\theta_y)` transformation, for a given reference :math:`(b_0, \\ell_0)`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">den</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l</span><span class="p">))</span><span class="o">**</span><span class="mf">2.</span>
+	<span class="n">J00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span><span class="o">-</span><span class="n">l0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l</span><span class="p">))</span><span class="o">/</span><span class="n">den</span>
+	<span class="n">J01</span> <span class="o">=</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span><span class="o">/</span><span class="n">den</span> 
+	<span class="n">den</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">l</span><span class="p">))</span><span class="o">**</span><span class="mf">2.</span>
+	<span class="n">J10</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span> <span class="n">b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">l</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">l0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">den</span><span class="p">)</span>
+	<span class="n">J11</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span> <span class="o">-</span> <span class="mi">2</span><span class="o">*</span><span class="n">l0</span><span class="p">))</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b0</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">den</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">J00</span><span class="p">,</span> <span class="n">J01</span><span class="p">],[</span><span class="n">J10</span><span class="p">,</span> <span class="n">J11</span><span class="p">]])</span></div>
+
+
+<div class="viewcode-block" id="compute_distance"><a class="viewcode-back" href="../index.html#linking.compute_distance">[docs]</a><span class="k">def</span> <span class="nf">compute_distance</span><span class="p">(</span><span class="n">theta_1</span><span class="p">,</span> <span class="n">theta_2</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes </span>
+<span class="sd">	:math:`||\\vec{\\theta}_1  - \\vec{\\theta}_2||`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">theta_1</span> <span class="o">-</span> <span class="n">theta_2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="solar_elongation"><a class="viewcode-back" href="../index.html#linking.solar_elongation">[docs]</a><span class="k">def</span> <span class="nf">solar_elongation</span><span class="p">(</span><span class="n">pair</span><span class="p">,</span> <span class="n">exposures</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes the cosine of the angle :math:`\\beta_0` for a pair, corresponding to the solar elongation of the target at the time of the first detection:</span>
+
+<span class="sd">	:math:`\\cos\\beta_0 = -\\frac{(\\alpha, \\beta, 1) \\cdot \\mathbf{r}_0}{r_0 \\sqrt{\\alpha^2 + \\beta^2 + 1}}`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r0</span> <span class="o">=</span> <span class="o">-</span><span class="n">exposusres</span><span class="p">[</span><span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+	<span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pair</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+	<span class="n">prod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span><span class="n">r0</span><span class="p">,</span> <span class="n">vec</span><span class="p">)</span>
+	<span class="n">r0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">r0</span><span class="p">)</span>
+	<span class="n">vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">prod</span><span class="o">/</span><span class="p">(</span><span class="n">r0</span><span class="o">*</span><span class="n">vec</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="gamma_dot_bind"><a class="viewcode-back" href="../index.html#linking.gamma_dot_bind">[docs]</a><span class="k">def</span> <span class="nf">gamma_dot_bind</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">alpha_dot</span><span class="p">,</span> <span class="n">beta_dot</span><span class="p">,</span> <span class="n">cos_beta</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes a limiting value for :math:`\\dot{\\gamma}`, given by </span>
+<span class="sd">	</span>
+<span class="sd">	:math:`\\dot{\\gamma}_{\\text{bind}}^2 = 8 \\pi^2 \\gamma^3(1 + \\gamma^2 - 2 \\gamma \\cos\\beta_0)^{-1/2} - \\dot{\\alpha}^2 - \\dot{\\beta}^2`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">gamma</span><span class="o">**</span><span class="mf">2.</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">cos_beta</span> <span class="o">*</span> <span class="n">gamma</span> 
+	<span class="n">gamma_bind_sq</span> <span class="o">=</span> <span class="mi">8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mf">2.</span> <span class="o">*</span> <span class="n">gamma</span><span class="o">**</span><span class="mf">3.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">alpha_dot</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">beta_dot</span><span class="o">**</span><span class="mi">2</span>
+	<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gamma_bind_sq</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Exposure"><a class="viewcode-back" href="../index.html#linking.Exposure">[docs]</a><span class="k">class</span> <span class="nc">Exposure</span><span class="p">:</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Corresponds to an exposure, with the correspondent detections, covariance/correlation matrix, Earth position and kD tree</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">expnum</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;EXPNUM&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ra_center</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;RADEG&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dec_center</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;DECDEG&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mjd</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;MJD_OBS&#39;</span><span class="p">]</span>
+		<span class="n">expo</span> <span class="o">=</span> <span class="n">zone</span><span class="p">[</span><span class="n">zone</span><span class="p">[</span><span class="s1">&#39;EXPOSURE&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XY_COV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]],[</span><span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XY_COV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">expo</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]])</span><span class="o">/</span><span class="p">((</span><span class="mi">1000</span><span class="o">*</span><span class="mi">3600</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XI_X&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XI_C&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">],[</span><span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XI_C&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XI_Y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]]])</span><span class="o">/</span><span class="p">((</span><span class="mi">1000</span><span class="o">*</span><span class="mi">3600</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">xi_0</span> <span class="o">=</span> <span class="n">expo</span><span class="p">[</span><span class="s1">&#39;XI_0&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">compute_earth_position</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">to_bl</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">to_theta</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Exposure.to_bl"><a class="viewcode-back" href="../index.html#linking.Exposure.to_bl">[docs]</a>	<span class="k">def</span> <span class="nf">to_bl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Converts from :math:`(\\alpha,\\delta) \mapsto (b,\\ell)`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">b_l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra_center</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec_center</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Exposure.to_theta"><a class="viewcode-back" href="../index.html#linking.Exposure.to_theta">[docs]</a>	<span class="k">def</span> <span class="nf">to_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Converts from :math:`(b,\\ell) \mapsto (\\theta_x,\\theta_y)`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">theta_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Exposure.compute_earth_position"><a class="viewcode-back" href="../index.html#linking.Exposure.compute_earth_position">[docs]</a>	<span class="k">def</span> <span class="nf">compute_earth_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Computes the position of the Earth with reference to the rotated barycentric system at the time of the start of the exposure </span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">r_exp</span> <span class="o">=</span> <span class="n">earth_position</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">r_exp</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span></div>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Sometimes we wanna see if the thing works, right?</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;Exposure &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expnum</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; taken at MJD &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mjd</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, centered on (&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra_center</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dec_center</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span>
+		<span class="k">return</span> <span class="n">st</span>
+
+<div class="viewcode-block" id="Exposure.find_detections"><a class="viewcode-back" href="../index.html#linking.Exposure.find_detections">[docs]</a>	<span class="k">def</span> <span class="nf">find_detections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detections</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds all detections in the exposures in a given list of detections</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">expnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">expnum</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">detections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detections</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Exposure.get_points"><a class="viewcode-back" href="../index.html#linking.Exposure.get_points">[docs]</a>	<span class="k">def</span> <span class="nf">get_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds the tangent plane coordinates of all the detections, so that we can use them in the kD tree</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">theta_x</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">theta_y</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">detections</span><span class="p">:</span>
+			<span class="n">theta_x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+			<span class="n">theta_y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+		<span class="n">theta_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">theta_x</span><span class="p">,</span> <span class="n">theta_y</span><span class="p">])</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">det_pos</span> <span class="o">=</span> <span class="n">theta_vec</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="Exposure.make_kdtree"><a class="viewcode-back" href="../index.html#linking.Exposure.make_kdtree">[docs]</a>	<span class="k">def</span> <span class="nf">make_kdtree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Builds the cKDTree object for the exposure</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detections</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span> <span class="o">=</span> <span class="n">spatial</span><span class="o">.</span><span class="n">cKDTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det_pos</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span> 
+			<span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Exposure.query_exposure"><a class="viewcode-back" href="../index.html#linking.Exposure.query_exposure">[docs]</a>	<span class="k">def</span> <span class="nf">query_exposure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Queries the exposure for a detection on the ball :math:`\\mathcal{C}(\\mathrm{point}, \\mathrm{radius})`, returns all the detections in this ball</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kdtree</span><span class="o">.</span><span class="n">query_ball_point</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">radius</span><span class="p">)</span>
+			<span class="k">return</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">}</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span></div></div>
+
+
+<div class="viewcode-block" id="Detection"><a class="viewcode-back" href="../index.html#linking.Detection">[docs]</a><span class="k">class</span> <span class="nc">Detection</span><span class="p">:</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class corresponds to a detection. A detection is composed of a (RA, DEC) pair (then transformed to ecliptic and tangent plane angles), a detection time (in mjd),</span>
+<span class="sd">	a magnitude and its measurement error, an exposure number and an error in position. As an input for the class, we need a single line of the output (exp[keys[i]].e. single epoch)</span>
+<span class="sd">	catalog in astropy table format, plus the constants b0, l0 and t0</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">,</span> <span class="n">b0</span><span class="o">=</span><span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="o">=</span><span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ra</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;NEW_RA&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">dec</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;NEW_DEC&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mjd</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;MJD_OBS&#39;</span><span class="p">]</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">mag</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;MAG&#39;</span><span class="p">]</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;FLUX_AUTO&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;MAG_ZERO&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">snr</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;SNR&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">magerr</span> <span class="o">=</span> <span class="mf">2.5</span><span class="o">*</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;FLUXERR_AUTO&#39;</span><span class="p">]</span><span class="o">/</span><span class="n">table</span><span class="p">[</span><span class="s1">&#39;FLUX_AUTO&#39;</span><span class="p">])</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">to_bl</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">to_theta</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">expnum</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;EXPNUM&#39;</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">pos_error</span> <span class="o">=</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;ERRAWIN_WORLD&#39;</span><span class="p">]</span>
+		<span class="c1">#self.r = exposures[self.expnum].r</span>
+
+
+<div class="viewcode-block" id="Detection.to_bl"><a class="viewcode-back" href="../index.html#linking.Detection.to_bl">[docs]</a>	<span class="k">def</span> <span class="nf">to_bl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Converts from :math:`(\\alpha,\\delta) \mapsto (b,\\ell)`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span> <span class="o">=</span> <span class="n">b_l</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Detection.to_theta"><a class="viewcode-back" href="../index.html#linking.Detection.to_theta">[docs]</a>	<span class="k">def</span> <span class="nf">to_theta</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Converts from :math:`(b,\\ell) \mapsto (\\theta_x,\\theta_y)`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">theta_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Detection.covariance_matrix"><a class="viewcode-back" href="../index.html#linking.Detection.covariance_matrix">[docs]</a>	<span class="k">def</span> <span class="nf">covariance_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds the error (exp[keys[i]].e. covariance) matrix from the position, according to the atmospheric part from the exposure</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="c1">#self.covariance  = (np.array([[self.pos_error**2., 0], [0, self.pos_error**2.]]) + exposures[self.expnum].cov) * (np.pi/180)**2</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">correlation</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_error</span><span class="o">**</span><span class="mf">2.</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos_error</span><span class="o">**</span><span class="mf">2.</span><span class="p">]])</span> <span class="o">+</span> <span class="n">exposures</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+		<span class="n">J</span> <span class="o">=</span> <span class="n">J_eq_to_ec</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dec</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">180</span><span class="p">)</span>
+		<span class="n">Sigma_ec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">J</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">correlation</span><span class="p">,</span> <span class="n">J</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+		<span class="n">G</span> <span class="o">=</span> <span class="n">J_ec_to_tp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">l</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">)</span>
+		<span class="n">Sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Sigma_ec</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">covariance</span> <span class="o">=</span> <span class="n">Sigma</span></div>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Visualization, as usual</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;Detection at (RA,DEC) = (&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ra</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dec</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;), MJD = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mjd</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">s</span> 
+
+	<span class="k">def</span>  <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Adding two detections makes a Pair. Adding more than two makes a Candidate</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Detection</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">Pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">other</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Pair</span> <span class="ow">or</span> <span class="n">other</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Candidate</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">Candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pair"><a class="viewcode-back" href="../index.html#linking.Pair">[docs]</a><span class="k">class</span> <span class="nc">Pair</span><span class="p">:</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Class for pairs of detections, with methods to estimate :math:`\\alpha, \\beta, \\dot{\\alpha},\\dot{\\beta}` and the search region for a different MJD</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Det1</span><span class="p">,</span> <span class="n">Det2</span><span class="p">,</span> <span class="n">b0</span> <span class="o">=</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span> <span class="o">=</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Creates the Pair object, consisting of two detections</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">det1</span> <span class="o">=</span> <span class="n">Det1</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">det2</span> <span class="o">=</span> <span class="n">Det2</span>
+		<span class="c1">#self.det1.covariance_matrix()</span>
+		<span class="c1">#self.det2.covariance_matrix()</span>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Pair: Det 1 and Det 2</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;Pair:</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="Pair.find_params"><a class="viewcode-back" href="../index.html#linking.Pair.find_params">[docs]</a>	<span class="k">def</span> <span class="nf">find_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds the parameters :math:`\\alpha,\\beta,\\dot{\\alpha},\\dot{\\beta}` for a fixed :math:`\\gamma`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">alpha_est</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">theta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">t0</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">alphadot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">betadot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Pair.search_radius"><a class="viewcode-back" href="../index.html#linking.Pair.search_radius">[docs]</a>	<span class="k">def</span> <span class="nf">search_radius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">b0</span> <span class="o">=</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span> <span class="o">=</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Finds the search radius for a third observation at a time t3</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">search</span> <span class="o">=</span> <span class="n">search_radius</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">correlation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">correlation</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Pair.search_position"><a class="viewcode-back" href="../index.html#linking.Pair.search_position">[docs]</a>	<span class="k">def</span> <span class="nf">search_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Predicts the position of the third detection at a time t3</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">find_params</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">t0</span><span class="p">)</span>
+		<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">theta_real</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alphadot</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">betadot</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">t3</span><span class="p">,</span> <span class="n">b0</span><span class="p">,</span> <span class="n">l0</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">r0</span><span class="p">)</span>
+		<span class="k">return</span> <span class="kc">None</span></div>
+
+	<span class="k">def</span>  <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Adding a Pair to anything makes a candidate</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">Candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Pair.alpha_est_pair"><a class="viewcode-back" href="../index.html#linking.Pair.alpha_est_pair">[docs]</a>	<span class="k">def</span> <span class="nf">alpha_est_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">exposures</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Pair version of the :math:`(\\alpha,\\beta,\\dot{\\alpha},\\dot{\\beta})` fit, given two measurements :math:`\\vec{\\theta}_{1,2}`, </span>
+<span class="sd">		finds the :math:`\\vec{\\alpha}` parameter that best describes it, for a fixed :math:`\\gamma`</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">r1</span> <span class="o">=</span> <span class="n">exposures</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+		<span class="n">r2</span> <span class="o">=</span> <span class="n">exposures</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+
+		<span class="n">dr</span> <span class="o">=</span> <span class="n">r2</span> <span class="o">-</span> <span class="n">r1</span>
+		<span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">mjd</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">mjd</span>
+		<span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dt</span><span class="p">]])</span>
+		<span class="n">M_inv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+
+		<span class="n">theta1_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">theta</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+		<span class="n">theta2_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det2</span><span class="o">.</span><span class="n">theta</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">gamma</span><span class="o">*</span><span class="n">dr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+		<span class="n">theta_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bmat</span><span class="p">([</span><span class="n">theta1_p</span><span class="p">,</span> <span class="n">theta2_p</span><span class="p">])</span>
+
+		<span class="n">params</span> <span class="o">=</span> <span class="n">M_inv</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">theta_v</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="n">params</span>
+		<span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="Pair.theta_pair"><a class="viewcode-back" href="../index.html#linking.Pair.theta_pair">[docs]</a>	<span class="k">def</span> <span class="nf">theta_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exposures</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">gamma_dot</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Given a pair, a set of parameters :math:`(\\alpha,\\beta,\\dot{\\alpha},\\dot{\\beta})` coming from the pair fit, finds the position of a new detection at a </span>
+<span class="sd">		time :math:`t` with a fixed :math:`(\\gamma, \\dot{\\gamma})`. </span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">t0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">mjd</span>
+		<span class="n">r0</span> <span class="o">=</span> <span class="n">exposures</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">det1</span><span class="o">.</span><span class="n">expnum</span><span class="p">]</span><span class="o">.</span><span class="n">r</span>
+
+		<span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="mf">365.</span>
+		<span class="n">r</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span><span class="n">r0</span>
+
+		<span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">z</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">gamma_dot</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> 
+
+		<span class="k">return</span> <span class="n">x</span><span class="o">/</span><span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="o">/</span><span class="n">z</span> </div></div>
+
+
+<div class="viewcode-block" id="make_detections"><a class="viewcode-back" href="../index.html#linking.make_detections">[docs]</a><span class="k">def</span> <span class="nf">make_detections</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">savefile</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Transforms a list of detections in filename into a pickled file that has a list of Detection objects</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">det</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+	<span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">det</span><span class="p">:</span>
+		<span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+	<span class="n">save_data</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">savefile</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="make_exposures"><a class="viewcode-back" href="../index.html#linking.make_exposures">[docs]</a><span class="k">def</span> <span class="nf">make_exposures</span><span class="p">(</span><span class="n">exposure_table</span><span class="p">,</span> <span class="n">detections</span><span class="p">,</span> <span class="n">savefile</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Transforms a list of exposures in exposure_table and detections into a pickled file that has a list of Exposure objects</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">exposures</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exposure_table</span><span class="p">:</span>
+		<span class="n">exposures</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;EXPNUM&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Exposure</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exposures</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+		<span class="n">i</span><span class="o">.</span><span class="n">find_detections</span><span class="p">(</span><span class="n">detections</span><span class="p">)</span>
+		<span class="n">i</span><span class="o">.</span><span class="n">make_kdtree</span><span class="p">()</span>
+
+
+	<span class="n">save_data</span><span class="p">(</span><span class="n">exposures</span><span class="p">,</span> <span class="n">savefile</span><span class="p">)</span></div>
+
+ 
+<div class="viewcode-block" id="Candidate"><a class="viewcode-back" href="../index.html#linking.Candidate">[docs]</a><span class="k">class</span> <span class="nc">Candidate</span><span class="p">:</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Candidate class, consisting of a bunch of Detection objects added together. We can also make this work from the Pair class, or even from multiple Candidate objects.</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">detections</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		We can input an arbitrary number of detections, with can be either Detections, Pairs or Candidates.</span>
+<span class="sd">		&#39;&#39;&#39;</span>	
+		<span class="bp">self</span><span class="o">.</span><span class="n">det</span> <span class="o">=</span> <span class="n">detections</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">detections</span><span class="p">):</span>
+			<span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Detection</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+			<span class="k">elif</span> <span class="n">i</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Pair</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">det1</span><span class="p">)</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">det2</span><span class="p">)</span>
+			<span class="k">elif</span> <span class="n">i</span><span class="o">.</span><span class="vm">__class__</span> <span class="ow">is</span> <span class="n">Candidate</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+					<span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Prints all Detections in the Candidate</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">s</span> <span class="o">=</span> <span class="s1">&#39;Candidate with detections: </span><span class="se">\n</span><span class="s1">&#39;</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+			<span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+		<span class="k">return</span> <span class="n">s</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+	<span class="k">def</span> <span class="nf">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Makes a new Candidate with the added object</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">Candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></div>
+
+	<span class="c1">#eventually:</span>
+	<span class="c1">#def orbit_fit(self) </span>
+
+
+<div class="viewcode-block" id="find_matches"><a class="viewcode-back" href="../index.html#linking.find_matches">[docs]</a><span class="k">def</span> <span class="nf">find_matches</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">savename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Pair making algorithm for a given :math:`\\gamma`. Will define it here soon</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1">#list_pairs = set()</span>
+
+	<span class="n">exp</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;/home/pedro/Documents/DES/exposures.exp&#39;</span><span class="p">)</span>
+	<span class="n">detections</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;/home/pedro/Documents/DES/detections.det&#39;</span><span class="p">)</span>
+	<span class="n">keys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)):</span>
+		<span class="n">list_pairs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+		<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+		<span class="nb">print</span> <span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> 
+		<span class="n">r0</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span>
+		<span class="n">t0</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span>
+		<span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">keys</span><span class="p">)):</span>
+			<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+			<span class="k">if</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span>  <span class="o">-</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span> <span class="o">&lt;</span> <span class="mi">180</span><span class="p">:</span>
+				<span class="nb">print</span> <span class="nb">str</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;----&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+				<span class="n">par_vec</span>  <span class="o">=</span> <span class="n">theta_parallax_vec</span><span class="p">(</span><span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">det_pos</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+				<span class="n">d_vec</span> <span class="o">=</span> <span class="n">compute_distance</span><span class="p">(</span><span class="n">par_vec</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+				<span class="n">r_par</span> <span class="o">=</span> <span class="n">max_proper</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">)</span>
+
+				<span class="n">par_vec_m</span> <span class="o">=</span> <span class="n">theta_parallax_vec</span><span class="p">(</span><span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">det_pos</span><span class="p">,</span> <span class="mf">0.95</span><span class="o">*</span><span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+				<span class="n">d_vec_m</span> <span class="o">=</span> <span class="n">compute_distance</span><span class="p">(</span><span class="n">par_vec_m</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+				<span class="n">r_par_m</span> <span class="o">=</span> <span class="n">max_proper</span><span class="p">(</span><span class="mf">0.95</span><span class="o">*</span><span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">)</span>
+
+				<span class="n">par_vec_p</span> <span class="o">=</span> <span class="n">theta_parallax_vec</span><span class="p">(</span><span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">det_pos</span><span class="p">,</span> <span class="mf">1.05</span><span class="o">*</span><span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+				<span class="n">d_vec_p</span> <span class="o">=</span> <span class="n">compute_distance</span><span class="p">(</span><span class="n">par_vec_p</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">theta</span><span class="p">)</span>
+				<span class="n">r_par_p</span> <span class="o">=</span> <span class="n">max_proper</span><span class="p">(</span><span class="mf">1.1</span><span class="o">*</span><span class="n">gamma</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">,</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">mjd</span><span class="p">)</span>
+				
+				<span class="n">p</span> <span class="o">=</span> <span class="n">par_vec</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec</span> <span class="o">&lt;=</span> <span class="n">r_par</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="n">old_points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec</span> <span class="o">&lt;=</span> <span class="n">r_par</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">query_exposure</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">r_par</span><span class="p">)</span>
+					<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+							<span class="n">new_pairs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">old_points</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+							<span class="n">list_pairs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">new_pairs</span><span class="p">))</span>
+
+				<span class="n">p</span> <span class="o">=</span> <span class="n">par_vec_m</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec_m</span> <span class="o">&lt;=</span> <span class="n">r_par_m</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="n">old_points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec_m</span> <span class="o">&lt;=</span> <span class="n">r_par_m</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">query_exposure</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">r_par_m</span><span class="p">)</span>
+					<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+							<span class="n">new_pairs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">old_points</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+							<span class="n">list_pairs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">new_pairs</span><span class="p">))</span>
+				
+				<span class="n">p</span> <span class="o">=</span> <span class="n">par_vec_p</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec_p</span> <span class="o">&lt;=</span> <span class="n">r_par_p</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="n">old_points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">d_vec_p</span> <span class="o">&lt;=</span> <span class="n">r_par_p</span> <span class="o">+</span> <span class="n">d_exp</span><span class="p">)]</span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="n">points</span> <span class="o">=</span> <span class="n">exp</span><span class="p">[</span><span class="n">keys</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span><span class="o">.</span><span class="n">query_exposure</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">r_par_p</span><span class="p">)</span>
+					<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">points</span><span class="p">:</span>
+							<span class="n">new_pairs</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span> <span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">old_points</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">points</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+							<span class="n">list_pairs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">new_pairs</span><span class="p">))</span>
+				<span class="k">try</span><span class="p">:</span>
+					<span class="k">del</span> <span class="n">new_pairs</span>
+				<span class="k">except</span><span class="p">:</span>
+					<span class="k">pass</span>
+
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">break</span>
+
+
+		<span class="n">save_data</span><span class="p">({</span><span class="n">gamma</span> <span class="p">:</span> <span class="n">list_pairs</span><span class="p">},</span> <span class="s1">&#39;/home/pedro/Documents/DES/pairs/&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">keys</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">savename</span> <span class="o">+</span> <span class="s1">&#39;.pair&#39;</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">find_triplets</span><span class="p">(</span><span class="n">gamma</span><span class="p">,</span> <span class="n">pairfile</span><span class="p">,</span> <span class="n">savename</span><span class="p">):</span>
+
+	<span class="k">return</span> <span class="kc">None</span>
+
+
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">if __name__ == &quot;__main__&quot;:</span>
+<span class="sd">	make_detections(&#39;/Users/pedro/Documents/DES/zone29/out/outputcatalog.csv&#39;,&#39;/Users/pedro/Documents/DES/detections.det&#39; )</span>
+<span class="sd">	make_exposures(tb.Table.read(&#39;exposure_data.fits&#39;), load_data(&#39;/Users/pedro/Documents/DES/detections.det&#39;), &#39;/Users/pedro/Documents/DES/exposures.exp&#39;)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+	<span class="n">exposures</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;/home/pedro/Documents/DES/exposures.exp&#39;</span><span class="p">)</span>
+
+	<span class="n">find_matches</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">30</span><span class="p">)</span>
+
+	
+
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

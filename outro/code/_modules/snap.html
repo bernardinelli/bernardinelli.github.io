@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>snap &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>snap</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for snap</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39; </span>
+<span class="sd">*Author: Pedro Bernardinelli*</span>
+
+<span class="sd">*Original: Who knows? Sometime May 2017 - Current: July 28, 2017*</span>
+
+
+<span class="sd">This program has the goal of transforming the second Friends of Friends output for one or multiple tiles into a catalog of detected objects, returning </span>
+<span class="sd">Delta t (defined in get_time), Delta m (defined coadd_mag), n_obs (in get_time), &lt;RA&gt; and &lt;DEC&gt; for all coadd-match objects and all but Delta m for the no-coadds.</span>
+<span class="sd">As auxiliary information, we also preserve the MATCH_ID and TILE for each object.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">import</span> <span class="nn">distutils.dir_util</span> <span class="c1">#create directory  </span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span> <span class="k">as</span> <span class="nn">mp</span> 
+<span class="kn">import</span> <span class="nn">itertools</span> <span class="k">as</span> <span class="nn">it</span>     
+<span class="kn">import</span> <span class="nn">friends_of_friends</span> <span class="k">as</span> <span class="nn">fof</span> 
+<span class="kn">import</span> <span class="nn">data_management</span> <span class="k">as</span> <span class="nn">dm</span>                                                         
+
+
+
+
+<span class="n">tiles</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;DES0135-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0135-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0136-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0136-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0137-0707&quot;</span><span class="p">,</span><span class="s2">&quot;DES0137-0250&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0137-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0138-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0138-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0139-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0139-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0140-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0140-0707&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0140-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0140-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0141-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0141-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0142-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0143-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0143-0707&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0143-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0143-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0144-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0144-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0145-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0146-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0146-0707&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0146-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0146-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0147-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0147-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0148-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0148-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0148-0707&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0149-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0149-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0150-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0150-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0151-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0151-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0151-0707&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;DES0152-0333&quot;</span><span class="p">,</span><span class="s2">&quot;DES0152-0416&quot;</span><span class="p">,</span><span class="s2">&quot;DES0152-0458&quot;</span><span class="p">,</span><span class="s2">&quot;DES0153-0541&quot;</span><span class="p">,</span><span class="s2">&quot;DES0154-0624&quot;</span><span class="p">,</span><span class="s2">&quot;DES0154-0250&quot;</span><span class="p">,</span><span class="s2">&quot;DES0154-0707&quot;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="get_groups"><a class="viewcode-back" href="../index.html#snap.get_groups">[docs]</a><span class="k">def</span> <span class="nf">get_groups</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;For a given data table (i.e. an output from the second FoF) sorted by MATCH_ID, creates a dictionary indexed by the MATCH_ID where each item is a list of every appearance of this ID in table. </span>
+<span class="sd">    vstacking would be ideal, as, then, each group would have its own table, but this process is time consuming and slows the process significantly &#39;&#39;&#39;</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">id_n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">table</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">id_n</span><span class="p">:</span>
+            <span class="n">groups</span><span class="p">[</span><span class="n">id_n</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#groups[id_n] = tb.vstack(groups[id_n])</span>
+            <span class="n">id_n</span> <span class="o">+=</span><span class="mi">1</span>
+            <span class="n">groups</span><span class="p">[</span><span class="n">id_n</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">table</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">groups</span></div>
+
+<div class="viewcode-block" id="get_time"><a class="viewcode-back" href="../index.html#snap.get_time">[docs]</a><span class="k">def</span> <span class="nf">get_time</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39; For a given data list (i.e. an entry in get_groups&#39; dictionary), finds </span>
+
+<span class="sd">    :math:`\\Delta t \\equiv \\max(|t_i - t_j|)`, </span>
+
+<span class="sd">    for all i,j observations of the same object. The function returns :math:`\\Delta t`, the second maximum value and </span>
+
+<span class="sd">    :math:`n_\\mathrm{obs} \\equiv \\text{number of single-epoch detections of the given object}.`</span>
+
+<span class="sd">    For an object with only one single-epoch detection, we get {0,0,1}. For the coadd-only objects (that is, the objects with no single epoch detection), we get {-1,-1,0}.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;MJD_OBS&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;v2.0&#39;</span><span class="p">])</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>  <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">i</span><span class="p">):</span>
+                   <span class="n">diff</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">times</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">-</span><span class="n">times</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">diff</span><span class="p">))</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">diff</span><span class="p">),</span> <span class="n">diff</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">diff</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">diff</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span></div>
+   
+<div class="viewcode-block" id="time_cat"><a class="viewcode-back" href="../index.html#snap.time_cat">[docs]</a><span class="k">def</span> <span class="nf">time_cat</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    For a given get_groups dictionary, returns :math:`\\Delta t`, :math:`\\Delta t_2`, :math:`n_\\mathrm{obs}` and MATCH_ID for all the entries in this dic.</span>
+<span class="sd">    Note that, as every object in the catalog has an associated Delta t and appears in the dictionary, n_group is isomorphich to MATCH_ID.  </span>
+<span class="sd">    This was not true in the previous versions of the code and led to a mistake in the identification of no-coadds</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">times2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n_obs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n_group</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)):</span>
+        <span class="n">t</span><span class="p">,</span> <span class="n">t2</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">get_time</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+            <span class="n">times2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span>
+            <span class="n">n_obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="n">n_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">times2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_obs</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">n_group</span><span class="p">)</span>     </div>
+
+<div class="viewcode-block" id="coadd_mag"><a class="viewcode-back" href="../index.html#snap.coadd_mag">[docs]</a><span class="k">def</span> <span class="nf">coadd_mag</span><span class="p">(</span><span class="n">groups</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;For a given COADD-match list of catalog appearances, finds all the coadd magnitudes and proceeds to compute </span>
+
+<span class="sd">    :math:`\\Delta m_f \\equiv \\min_{\\mathrm{abs}} (m_{\\text{single epoch},i,f} - m_{\\text{coadd},f}),`</span>
+
+<span class="sd">    where f is the filter, i is the single-epoch detection and min_abs is the sign-preserving absolute minimum, </span>
+<span class="sd">    that is, the closest value to zero, indiscriminant of sign, is kept, but we preserve its sign. The function returns Delta m_f for all the filters. </span>
+<span class="sd">    Note that if the coadd doesn&#39;t have the magnitude for a certain filter, we&#39;ll have m = +- 99, so this value is going to be huge</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">coadd_mag</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;COADD&#39;</span><span class="p">:</span>
+            <span class="n">coadd_mag</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_AUTO_G&#39;</span><span class="p">],</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_AUTO_R&#39;</span><span class="p">],</span> <span class="s1">&#39;i&#39;</span> <span class="p">:</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_AUTO_I&#39;</span><span class="p">],</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_AUTO_Z&#39;</span><span class="p">],</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_AUTO_Y&#39;</span><span class="p">]})</span>
+
+    <span class="n">delta_mag</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;g&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;i&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="mi">99</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coadd_mag</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;COADD&#39;</span><span class="p">:</span>
+            <span class="n">mag</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.5</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;FLUX_AUTO&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="n">i</span><span class="p">[</span><span class="s1">&#39;MAG_ZERO&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">coadd_mag</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">mag</span> <span class="o">-</span> <span class="n">coadd_mag</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;BAND&#39;</span><span class="p">]])</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">delta_mag</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;BAND&#39;</span><span class="p">]]):</span>
+                    <span class="n">delta_mag</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;BAND&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mag</span> <span class="o">-</span> <span class="n">coadd_mag</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;BAND&#39;</span><span class="p">]]</span>
+    <span class="k">return</span> <span class="n">delta_mag</span></div>
+
+<div class="viewcode-block" id="mag_cat"><a class="viewcode-back" href="../index.html#snap.mag_cat">[docs]</a><span class="k">def</span> <span class="nf">mag_cat</span><span class="p">(</span><span class="n">coadd</span><span class="p">,</span> <span class="n">groups</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Builds a dictionary of :math:`\\Delta m_f` for all objects &#39;&#39;&#39;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">coadd</span><span class="p">:</span>
+        <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">coadd_mag</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">res</span> </div>
+
+<div class="viewcode-block" id="obj_catalog"><a class="viewcode-back" href="../index.html#snap.obj_catalog">[docs]</a><span class="k">def</span> <span class="nf">obj_catalog</span><span class="p">(</span><span class="n">tilename</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    For a given tile(name) and FoF-output (filename), finds :math:`\\Delta t`, :math:`\\Delta m \\equiv \\min_{\\mathrm{abs}}(\\Delta m_f)`, :math:`n`, </span>
+<span class="sd">    :math:`\\langle \\alpha \\rangle` and :math:`\\langle \\delta \\rangle` for all detected objects,</span>
+<span class="sd">    returning them in two files: one for all coadd matches and all for all no-coadd matches.</span>
+<span class="sd">    This started as the non-graphical version of plot_histograms (now in snap_plots)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="c1">#making sure that the table is sorted by MATCH_ID, as required by get_groups</span>
+    <span class="n">a</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">)</span>
+    <span class="n">groups</span> <span class="o">=</span> <span class="n">get_groups</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+    <span class="c1">#time catalog assigns Delta_t = -1 to things that do NOT have a single epoch, but do have a coadd exposure.</span>
+    <span class="c1">#note that here we do not discriminate between coadds and non-coadds</span>
+    <span class="n">delta_t</span><span class="p">,</span> <span class="n">delta_t2</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">,</span> <span class="n">n_groups</span> <span class="o">=</span> <span class="n">time_cat</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span> 
+
+    <span class="c1">#coadd-only</span>
+    <span class="n">coadd_groups</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;MATCH_ID&#39;</span><span class="p">][</span><span class="n">a</span><span class="p">[</span><span class="s1">&#39;VERSION&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;COADD&#39;</span><span class="p">])</span>
+    <span class="c1">#if something&#39;s magnitude is not a coadd match for some reason, we get a +- 99 </span>
+    <span class="n">mag</span> <span class="o">=</span> <span class="n">mag_cat</span><span class="p">(</span><span class="n">coadd_groups</span><span class="p">,</span> <span class="n">groups</span><span class="p">)</span>
+
+    <span class="n">min_mag</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1">#finds which coadd groups are part of n_groups</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">coadd_groups</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_groups</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ids</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">j</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">mag</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="n">min_mag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">data</span><span class="p">))])</span>
+
+    <span class="n">min_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">min_mag</span><span class="p">)</span>
+    <span class="c1">#indexing so we can cut the non-coadds off</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">delta_t</span><span class="p">))</span> <span class="k">if</span> <span class="n">n_groups</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">in</span> <span class="n">coadd_groups</span><span class="p">]</span>
+    <span class="n">n_coadd</span> <span class="o">=</span> <span class="n">n_obs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">t_coadd</span> <span class="o">=</span> <span class="n">delta_t</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">t_coadd2</span> <span class="o">=</span> <span class="n">delta_t2</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">mean_ra</span>  <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mean_dec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+        <span class="n">mean_ra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;NEW_RA&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+        <span class="n">mean_dec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;NEW_DEC&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+
+    <span class="c1">#this is the coadd output file</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">((</span><span class="n">index</span><span class="p">,</span><span class="n">t_coadd</span><span class="p">,</span> <span class="n">t_coadd2</span><span class="p">,</span> <span class="n">mean_ra</span><span class="p">,</span> <span class="n">mean_dec</span><span class="p">,</span> <span class="n">min_mag</span><span class="p">,</span> <span class="n">n_coadd</span><span class="p">),</span><span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;MATCH_ID&quot;</span><span class="p">,</span><span class="s2">&quot;DELTA_T&quot;</span><span class="p">,</span> <span class="s1">&#39;DELTA_T2&#39;</span><span class="p">,</span> <span class="s2">&quot;MEAN_RA&quot;</span><span class="p">,</span><span class="s2">&quot;MEAN_DEC&quot;</span><span class="p">,</span><span class="s2">&quot;DELTA_M&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">))</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;zone29/&#39;</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s2">&quot;_out_coadd.fits&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1">#everything that is not on the coadd ends up here. There&#39;s, of course, no magnitude match. </span>
+    <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">delta_t</span><span class="p">))</span> <span class="k">if</span> <span class="n">n_groups</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">coadd_groups</span><span class="p">]</span>
+    <span class="n">t_non_coadd</span> <span class="o">=</span> <span class="n">delta_t</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">t_non_coadd2</span> <span class="o">=</span> <span class="n">delta_t2</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">n_non_coadd</span> <span class="o">=</span> <span class="n">n_obs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="n">mean_ra</span>  <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mean_dec</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
+        <span class="n">mean_ra</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;NEW_RA&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+        <span class="n">mean_dec</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">([</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;NEW_DEC&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">[</span><span class="n">i</span><span class="p">]]))</span>
+
+    <span class="c1">#No-coadd output file</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">((</span><span class="n">index</span><span class="p">,</span><span class="n">t_non_coadd</span><span class="p">,</span> <span class="n">t_non_coadd2</span><span class="p">,</span> <span class="n">mean_ra</span><span class="p">,</span> <span class="n">mean_dec</span><span class="p">,</span> <span class="n">n_non_coadd</span><span class="p">),</span><span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;MATCH_ID&quot;</span><span class="p">,</span><span class="s2">&quot;DELTA_T&quot;</span><span class="p">,</span> <span class="s2">&quot;DELTA_T2&quot;</span><span class="p">,</span> <span class="s2">&quot;MEAN_RA&quot;</span><span class="p">,</span><span class="s2">&quot;MEAN_DEC&quot;</span><span class="p">,</span> <span class="s2">&quot;N&quot;</span><span class="p">))</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;zone29/&#39;</span><span class="o">+</span><span class="n">tilename</span><span class="o">+</span><span class="s2">&quot;_out_nocoadd.fits&quot;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="obj_star"><a class="viewcode-back" href="../index.html#snap.obj_star">[docs]</a><span class="k">def</span> <span class="nf">obj_star</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This is a * argument implementation of object_catalog, so we can paralelize the process for multiple tiles</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">obj_catalog</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="tile_cat"><a class="viewcode-back" href="../index.html#snap.tile_cat">[docs]</a><span class="k">def</span> <span class="nf">tile_cat</span><span class="p">(</span><span class="n">tiles</span><span class="p">,</span> <span class="n">nodes</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This script generates a coadd and a noncoadd catalog for each of the tiles, using the given number of nodes</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">:</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Documents/DES/zone29/&#39;</span>  <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;_final.fits&#39;</span><span class="p">)</span>
+
+    <span class="n">iterable</span> <span class="o">=</span> <span class="n">it</span><span class="o">.</span><span class="n">izip</span><span class="p">(</span><span class="n">tiles</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">)</span>
+    <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">obj_star</span><span class="p">,</span><span class="n">iterable</span><span class="p">)</span> <span class="c1">#list of each projected WCS Table rows </span>
+        
+    <span class="n">pool</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="zone_cat"><a class="viewcode-back" href="../index.html#snap.zone_cat">[docs]</a><span class="k">def</span> <span class="nf">zone_cat</span><span class="p">(</span><span class="n">tiles</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Merges all tile (in zone) files into a single table, stacking everything</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">coadd</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">nocoadd</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tiles</span><span class="p">:</span>
+        <span class="n">coadd</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Dropbox/DES/zone29/&#39;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;_out_coadd.fits&#39;</span><span class="p">)</span>
+        <span class="n">coadd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;TILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">coadd</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">nocoadd</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Dropbox/DES/zone29/&#39;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;_out_nocoadd.fits&#39;</span><span class="p">)</span>
+        <span class="n">nocoadd</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;TILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nocoadd</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">*</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+
+
+    <span class="n">data_coadd</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">coadd</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">data_coadd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Dropbox/DES/zone29/zone29coadd.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">data_nocoadd</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">nocoadd</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">data_nocoadd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Dropbox/DES/zone29/zone29nocoadd.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

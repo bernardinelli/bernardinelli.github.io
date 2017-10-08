@@ -1,0 +1,612 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>covariance &mdash; DESPM  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="DESPM  documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> DESPM
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DESPM</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>covariance</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for covariance</h1><div class="highlight"><pre>
+<span></span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">Author: Pedro Bernardinelli</span>
+<span class="sd">May 1, 2017</span>
+<span class="sd">Current: July 28, 2017</span>
+
+<span class="sd">Calculates covariances from the exposures using Gary&#39;s astrometric files. This utility copies the data</span>
+<span class="sd">using astroplots&#39; select function and proceeds to obtain all the individual covariance matrices given the</span>
+<span class="sd">residuals in v = (x,y) for a given weight factor.</span>
+<span class="sd">Calculates the two-point correlation function </span>
+
+<span class="sd">:math:`\\xi(\\mathbf{r}) = \\langle \\Delta \\mathbf{x}(\\mathbf{x}) \\Delta \\mathbf{x}(\\mathbf{x}+\\mathbf{r}) \\rangle` </span>
+
+<span class="sd">for each exposure. From these values, we produce &lt;xi&gt;, the average of a given region,</span>
+<span class="sd">so we can measure the total distortion in the image not coming from shot noise (xi(0)).</span>
+<span class="sd">We also compute the ellipticity of the two-point function, where</span>
+
+<span class="sd">:math:`e_1 = \\frac{I_{xx} - I{yy}}{I_{xx} + I_{yy}}`</span>
+
+<span class="sd">:math:`e_2 = \\frac{2 I_{xy}}{I_{xx} + I_{yy}}`</span>
+
+<span class="sd">July 28:</span>
+<span class="sd">Clean-up and removing the treecorr files</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="kn">import</span> <span class="nn">astropy.io.fits</span> <span class="k">as</span> <span class="nn">af</span>
+<span class="kn">import</span> <span class="nn">astropy.table</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="k">import</span> <span class="n">binned_statistic</span> <span class="k">as</span> <span class="n">binst</span> 
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="k">import</span> <span class="n">combinations</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">treecorr</span> <span class="k">as</span> <span class="nn">tc</span> <span class="c1">#Jarvis&#39;s kdTree 2pt correlation function magic</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="k">import</span> <span class="n">simps</span>
+<span class="kn">from</span> <span class="nn">scipy.misc</span> <span class="k">import</span> <span class="n">derivative</span>
+<span class="kn">import</span> <span class="nn">astroplots</span> <span class="k">as</span> <span class="nn">ap</span>
+<span class="kn">from</span> <span class="nn">astroeb</span> <span class="k">import</span> <span class="n">vcorr</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+
+<span class="n">n_bin</span> <span class="o">=</span> <span class="mi">140</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;des.mplstyle&#39;</span><span class="p">)</span> <span class="c1">#DES plot styles!</span>
+
+
+<span class="n">SAVE</span> <span class="o">=</span> <span class="s1">&#39;/Users/pedro/Documents/DES/zone029.astro.fits.SAVE&#39;</span>
+
+<div class="viewcode-block" id="data_to_dump"><a class="viewcode-back" href="../index.html#covariance.data_to_dump">[docs]</a><span class="k">def</span> <span class="nf">data_to_dump</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">exposure</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39; This copies the residuals from the SAVE file and saves in a manner that xi_full can use &#39;&#39;&#39;</span>
+	<span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">xW</span><span class="p">,</span> <span class="n">yW</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">exposure</span><span class="p">)</span>
+	<span class="n">a</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">()</span>
+	<span class="n">a</span><span class="p">[</span><span class="s1">&#39;DELTA_X&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xv</span>
+	<span class="n">a</span><span class="p">[</span><span class="s1">&#39;DELTA_Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yv</span>
+	<span class="n">a</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">xW</span>
+	<span class="n">a</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">yW</span>
+
+	<span class="n">a</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Documents/DES/dump/&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">exposure</span><span class="p">)</span><span class="o">+</span><span class="s1">&#39;.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_Expo"><a class="viewcode-back" href="../index.html#covariance.get_Expo">[docs]</a><span class="k">def</span> <span class="nf">get_Expo</span><span class="p">(</span><span class="n">fits</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This function finds all the exposures in a given SAVE residual file, coming from Gary&#39;s astrometric codes. This is the first step into computing xi</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+
+	<span class="c1">#Gary&#39;s neat workaround to making things easier when opening fits files:</span>
+	<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span><span class="o">==</span><span class="nb">str</span><span class="p">:</span>
+		<span class="n">ff</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">ff</span> <span class="o">=</span> <span class="n">fits</span>
+    <span class="c1">#As the exposures are saved in a [D, X, X, X, X , X, X, X] format, we should have a way of copying this...    </span>
+	<span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;Name&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">ff</span><span class="p">[</span><span class="s1">&#39;Exposures&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">]</span> <span class="c1">#magical one line double for </span>
+	<span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../index.html#covariance.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">expo</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Copies the data needed for both xi and sigma</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">res</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span><span class="n">exposure</span><span class="o">=</span><span class="n">expo</span><span class="p">)</span>
+
+	<span class="n">xresW</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;xresW&#39;</span><span class="p">]</span> 
+	<span class="n">yresW</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;yresW&#39;</span><span class="p">]</span>
+	<span class="n">sigW</span>  <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;sigW&#39;</span><span class="p">]</span>
+	<span class="n">wtFrac</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;wtFrac&#39;</span><span class="p">]</span>
+	<span class="n">xW</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;xW&#39;</span><span class="p">]</span>
+	<span class="n">yW</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;yW&#39;</span><span class="p">]</span>
+
+
+	<span class="n">xv</span> <span class="o">=</span> <span class="n">xresW</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">wtFrac</span><span class="p">)</span>
+	<span class="n">yv</span> <span class="o">=</span> <span class="n">yresW</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">wtFrac</span><span class="p">)</span>
+	<span class="n">sig</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="n">sigW</span><span class="o">*</span><span class="n">sigW</span>
+
+	<span class="k">return</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">xW</span><span class="p">,</span> <span class="n">yW</span></div>
+
+<div class="viewcode-block" id="cov"><a class="viewcode-back" href="../index.html#covariance.cov">[docs]</a><span class="k">def</span> <span class="nf">cov</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Calculates the covariance matrix for a given set of Delta x, Delta y and sigmas:</span>
+
+<span class="sd">	:math:`\\boldsymbol{\\Sigma}_{ij} =  \\langle \\Delta x_i \\Delta x_j \\rangle`</span>
+
+<span class="sd">	This is equivalent to :math:`\\xi(0)` for the exposure</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sig</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span>
+	<span class="n">xx_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i&#39;</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span><span class="o">*</span><span class="n">norm</span>
+	<span class="n">yy_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i&#39;</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span><span class="o">*</span><span class="n">norm</span>
+	<span class="n">xy_cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;i,i,i&#39;</span><span class="p">,</span> <span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span><span class="o">*</span><span class="n">norm</span>
+
+	<span class="k">return</span> <span class="n">xx_cov</span><span class="p">,</span> <span class="n">yy_cov</span><span class="p">,</span> <span class="n">xy_cov</span></div>
+
+<div class="viewcode-block" id="create_cov_file"><a class="viewcode-back" href="../index.html#covariance.create_cov_file">[docs]</a><span class="k">def</span> <span class="nf">create_cov_file</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Catalog of covariances for each exposure</span>
+<span class="sd">	&#39;&#39;&#39;</span>	
+	<span class="n">exposures</span> <span class="o">=</span> <span class="n">get_Expo</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span>
+	<span class="n">cov_t</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;EXPOSURE&quot;</span><span class="p">,</span><span class="s2">&quot;XX_COV&quot;</span><span class="p">,</span> <span class="s2">&quot;YY_COV&quot;</span><span class="p">,</span> <span class="s2">&quot;XY_COV&quot;</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">))</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exposures</span><span class="p">:</span>
+		<span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">xW</span><span class="p">,</span> <span class="n">yW</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+		<span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">cov</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">:</span>
+			<span class="n">cov_t</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xy</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">cov_t</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xy</span><span class="p">])</span>
+	<span class="n">cov_t</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;EXPOSURE&#39;</span><span class="p">)</span>
+	<span class="n">cov_t</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="integrate_array"><a class="viewcode-back" href="../index.html#covariance.integrate_array">[docs]</a><span class="k">def</span> <span class="nf">integrate_array</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">r_min</span><span class="p">,</span> <span class="n">r_max</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes </span>
+
+<span class="sd">	:math:`\\int_{r_\\mathrm{min}}^{r_\\mathbf{max}} \\mathrm{d}r \\, \\xi(r)`</span>
+<span class="sd">	</span>
+<span class="sd">	for a given function :math:`\\xi`. The array of this function must be indexed in the same manner as the r array</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">r_interval</span> <span class="o">=</span> <span class="n">r</span><span class="p">[(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_max</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="n">r_min</span><span class="p">)]</span>
+	<span class="n">xi_interval</span> <span class="o">=</span> <span class="n">xi</span><span class="p">[(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_max</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;</span> <span class="n">r_min</span><span class="p">)]</span>
+
+	<span class="k">return</span> <span class="n">simps</span><span class="p">(</span><span class="n">xi_interval</span><span class="p">,</span> <span class="n">r_interval</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="r_gauss"><a class="viewcode-back" href="../index.html#covariance.r_gauss">[docs]</a><span class="k">def</span> <span class="nf">r_gauss</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	:math:`r \\cdot W(r)`, where :math:`W(r) = \\exp\\left(-\\frac{r^2}{2 (1\\text{arcsec})^2}\\right)`</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">one_arc_min</span> <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="mi">60</span>
+	<span class="k">return</span> <span class="n">r</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">one_arc_min</span><span class="p">)</span><span class="o">**</span><span class="mf">2.</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="xi_av_cat"><a class="viewcode-back" href="../index.html#covariance.xi_av_cat">[docs]</a><span class="k">def</span> <span class="nf">xi_av_cat</span><span class="p">(</span><span class="n">fits</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Makes a catalog of the different measures of the two-point function and the covariance matrix for each exposure. </span>
+<span class="sd">	We compute :math:`\\langle \\xi \\rangle` for :math:`-5 &lt; \\log r &lt; -4.5`, a region where the function is almost constant, for all the possible combinations we have</span>
+
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">exposure</span> <span class="o">=</span> <span class="n">get_Expo</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span>
+	<span class="n">table</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="p">(</span><span class="n">names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;EXPOSURE&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_0&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_P&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_X&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_Y&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_IM&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_E&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_B&quot;</span><span class="p">,</span> <span class="s2">&quot;XI_C&quot;</span><span class="p">,</span> <span class="s2">&quot;XX_COV&quot;</span><span class="p">,</span> <span class="s2">&quot;YY_COV&quot;</span><span class="p">,</span> <span class="s2">&quot;XY_COV&quot;</span><span class="p">))</span>
+
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exposure</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">logr</span><span class="p">,</span> <span class="n">xi_p</span><span class="p">,</span> <span class="n">xi_p_im</span><span class="p">,</span> <span class="n">xi_m</span><span class="p">,</span> <span class="n">xi_c</span><span class="p">,</span> <span class="n">xi_x</span><span class="p">,</span> <span class="n">xi_y</span><span class="p">,</span> <span class="n">xi_z</span><span class="p">,</span> <span class="n">xi_e</span><span class="p">,</span> <span class="n">xi_b</span> <span class="o">=</span> <span class="n">xi_full</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Documents/DES/dump/&#39;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;.fits&#39;</span><span class="p">)</span>
+			<span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logr</span><span class="p">)</span>
+			<span class="n">xi0</span> <span class="o">=</span> <span class="n">integrate_array</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">r_gauss</span><span class="p">(</span><span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="n">xi_p</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">/</span><span class="n">integrate_array</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">r_gauss</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="c1">#xi_0 as defined in the paper</span>
+			<span class="n">av_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_p</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span> <span class="c1">#average xi_p between e^{-5} deg and e^{-4.5} deg </span>
+			<span class="n">av_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_m</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span> <span class="c1">#average xi_- between....</span>
+			<span class="n">av_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_p_im</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span> <span class="c1">#you know what I&#39;m doing here </span>
+			<span class="n">av_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_x</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span>
+			<span class="n">av_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_y</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span> 
+			<span class="n">av_e</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_e</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span>
+			<span class="n">av_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_b</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span> 
+			<span class="n">av_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">xi_c</span><span class="p">[(</span><span class="n">logr</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">logr</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">4.5</span><span class="p">)])</span>
+			<span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">xW</span><span class="p">,</span> <span class="n">yW</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span> <span class="c1">#prep steps for the covariance matrix</span>
+			<span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xy</span> <span class="o">=</span> <span class="n">cov</span><span class="p">(</span><span class="n">xv</span><span class="p">,</span> <span class="n">yv</span><span class="p">,</span> <span class="n">sig</span><span class="p">)</span> <span class="c1">#covariance matrix. This is SLOW. </span>
+			<span class="n">table</span><span class="o">.</span><span class="n">add_row</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">xi0</span><span class="p">,</span> <span class="n">av_p</span><span class="p">,</span> <span class="n">av_x</span><span class="p">,</span> <span class="n">av_y</span><span class="p">,</span> <span class="n">av_im</span><span class="p">,</span> <span class="n">av_e</span><span class="p">,</span> <span class="n">av_b</span><span class="p">,</span> <span class="n">av_c</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xy</span><span class="p">])</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="n">exposure</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+	<span class="n">table</span><span class="p">[</span><span class="s1">&#39;EXPOSURE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+	<span class="n">table</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Documents/DES/2pt_and_cov.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="hist"><a class="viewcode-back" href="../index.html#covariance.hist">[docs]</a><span class="k">def</span> <span class="nf">hist</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Makes three histograms of the different measures we can produce from the correlation function and the covariance matrix</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">data</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+	<span class="n">xx</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">])]</span>
+	<span class="n">yy</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">])]</span>
+	<span class="n">xy</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XY_COV&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XY_COV&#39;</span><span class="p">])]</span>
+	<span class="n">xi_b</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_B&#39;</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_B&#39;</span><span class="p">])]</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_P&#39;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_+ \rangle$&#39;</span><span class="p">,</span><span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_0&#39;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\xi_0$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_E&#39;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_E \rangle$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">legend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma(\mathrm</span><span class="si">{mas}</span><span class="s1">)$&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;total_xi.pdf&#39;</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_X&#39;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_x \rangle$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_Y&#39;</span><span class="p">]),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_y \rangle$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>	
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">xx</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\Sigma_</span><span class="si">{xx}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">yy</span><span class="p">),</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\Sigma_</span><span class="si">{yy}</span><span class="s2">$&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma(\mathrm</span><span class="si">{mas}</span><span class="s1">)$&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Counts&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">legend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;directional_xi.pdf&#39;</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">xy</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\Sigma_</span><span class="si">{xy}</span><span class="s1">$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_IM&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \Im(\xi_+) \rangle$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_C&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_{\times} \rangle$&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.3</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+	<span class="n">legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">legend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Counts&quot;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\xi_{\times} (\mathrm</span><span class="si">{mas}</span><span class="s1">^2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;cross.pdf&#39;</span><span class="p">)</span></div>
+	
+<div class="viewcode-block" id="xi_full"><a class="viewcode-back" href="../index.html#covariance.xi_full">[docs]</a><span class="k">def</span> <span class="nf">xi_full</span><span class="p">(</span><span class="n">fits</span><span class="p">,</span> <span class="n">min_r</span><span class="o">=</span><span class="mf">5.</span><span class="o">/</span><span class="mi">3600</span><span class="p">,</span> <span class="n">max_r</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">dlogr</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">keepnan</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This computes all the two-point correlation functions for a given exposure.</span>
+<span class="sd">	</span>
+<span class="sd">	We first find a third order 2D polynomial that interpolates the data and subtract it from the data, to remove unwanted distortions</span>
+<span class="sd">	Then, we proceed to find all the pairs of points in each bin. We compute, then, &lt;xx&gt;, &lt;xy&gt;, &lt;yx&gt; and &lt;yy&gt;, which allows us to get &lt;xi_p&gt;, &lt;xi_x,y&gt;, &lt;xi_z&gt; and Im(&lt;xi_p&gt;)</span>
+<span class="sd">	After that, we rotate vv = xx - yy + i(xy + yx) into radial and perpendicular parts, so we can get the phase factor for &lt;xi_m&gt; and &lt;xi_c&gt;.</span>
+<span class="sd">	Finally, from the analytical expressions, we compute &lt;xi_E,B&gt;. Returns all these functions plus log(r).</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1">#copying down the data and fitting the order 3 polynomials</span>
+	<span class="n">data</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span>
+	<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">])</span>
+	<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Y&#39;</span><span class="p">])</span>
+	<span class="n">xp</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">Poly2d</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">sumOrder</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">yp</span> <span class="o">=</span> <span class="n">ap</span><span class="o">.</span><span class="n">Poly2d</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">sumOrder</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">xp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;DELTA_X&#39;</span><span class="p">])</span>
+	<span class="n">xfit</span> <span class="o">=</span> <span class="n">xp</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">],</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">])</span>
+	<span class="n">yp</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;DELTA_Y&quot;</span><span class="p">])</span>
+	<span class="n">yfit</span> <span class="o">=</span> <span class="n">yp</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+	<span class="n">polyVar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">xfit</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">yfit</span><span class="p">)</span>
+	<span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;DELTA_X&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="n">xfit</span>
+	<span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;DELTA_Y&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="n">yfit</span>
+	
+	<span class="n">points</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dx</span><span class="p">))</span>
+	<span class="n">pairs</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">combinations</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="mi">2</span><span class="p">)]</span>
+	<span class="n">pairs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="c1">#gets all the unique combinations of the two points, excluding the i,i combinations</span>
+
+	<span class="n">dr</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="c1">#complex displacement vector</span>
+
+	<span class="n">logdr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span>
+	<span class="n">bins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_r</span><span class="o">/</span><span class="n">min_r</span><span class="p">)</span><span class="o">/</span><span class="n">dlogr</span><span class="p">))</span>
+	<span class="n">hrange</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">logdr</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">logdr</span><span class="p">)</span><span class="o">+</span><span class="n">bins</span><span class="o">*</span><span class="n">dlogr</span><span class="p">)</span>
+	<span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+	<span class="n">logr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">logdr</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span>
+
+    <span class="c1">#first let us compute xi_+</span>
+	<span class="n">v</span> <span class="o">=</span>  <span class="n">dx</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">dy</span> <span class="c1">#this is the v = dx + i dy part</span>
+	<span class="n">xx</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">dx</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="c1">#dx dx correlation</span>
+	<span class="n">yy</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">dy</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="c1">#dy dy corr</span>
+	<span class="n">xy</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">dy</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+	<span class="n">yx</span> <span class="o">=</span> <span class="n">dy</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="n">dx</span><span class="p">[</span><span class="n">pairs</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+	<span class="n">vv</span> <span class="o">=</span> <span class="n">xx</span> <span class="o">+</span> <span class="n">yy</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">xy</span> <span class="o">-</span> <span class="n">yx</span><span class="p">)</span><span class="c1">#vv* correlation</span>
+	<span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">vv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span>
+	<span class="n">xi_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span>
+	<span class="n">xi_p_im</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="c1">#this should be zero! =) </span>
+
+	<span class="n">xi_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span><span class="n">weights</span><span class="o">=</span><span class="n">xx</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span>
+	<span class="n">xi_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">yy</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span>
+	<span class="n">vv</span> <span class="o">=</span> <span class="n">xx</span> <span class="o">-</span> <span class="n">yy</span>  <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="p">(</span><span class="n">xy</span> <span class="o">+</span> <span class="n">yx</span><span class="p">)</span>
+	<span class="n">xi_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">vv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span> <span class="c1">#vx1 vx2 - vy1 vy2 + 2i vx1 vy2 (actually, i(vx1 vy2 + vx2 vy1), but, if Im(xi_+) = 0, equivalent)</span>
+
+    <span class="c1"># Now, xi_-</span>
+    <span class="c1">#rotate vv into radial and perpendicular parts</span>
+	<span class="n">vv</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="c1"># = dx^2 - dy^2 + 2ixy</span>
+	<span class="n">dr_abs</span> <span class="o">=</span> <span class="n">dr</span><span class="o">.</span><span class="n">real</span><span class="o">*</span><span class="n">dr</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span> <span class="n">dr</span><span class="o">.</span><span class="n">imag</span><span class="o">*</span><span class="n">dr</span><span class="o">.</span><span class="n">imag</span>
+	<span class="n">vv</span> <span class="o">/=</span> <span class="n">dr_abs</span> <span class="c1">#effectively, we get a factor e^(-2itheta), where theta is the angle between i and j. This agrees with the definition of &lt;vv exp(-2itheta)&gt; of xi_-</span>
+	<span class="c1">#the line above is the difference between the treecorr xi and this xi. In treecorr, we get exp(-i4theta), as the shear field is spin-2, unlike our vector field here</span>
+	<span class="n">xi_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">logdr</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="n">hrange</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">vv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">counts</span>
+	<span class="n">xi_c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">xi_m</span><span class="p">)</span>
+	<span class="n">xi_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">xi_m</span><span class="p">)</span>
+
+    <span class="c1">#Now, for xi_E and xi_B</span>
+	<span class="n">dlogr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">logr</span><span class="p">)</span>
+	<span class="n">dlogr</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">logr</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span> <span class="o">-</span> <span class="n">logr</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span> 
+	<span class="c1">#as we only have logr, it&#39;s easier to integrate xi d(logr) than xi/r dr. Also, the cumulative sum function in numpy is really convenient here. Thanks, Gary!</span>
+	<span class="n">xir</span> <span class="o">=</span> <span class="n">xi_m</span><span class="o">*</span><span class="n">dlogr</span>
+	<span class="n">xi_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nancumsum</span><span class="p">(</span><span class="n">xir</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">xi_b</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">xi_p</span> <span class="o">-</span> <span class="n">xi_m</span><span class="p">)</span> <span class="o">+</span> <span class="n">xi_int</span>
+	<span class="n">xi_e</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">xi_p</span> <span class="o">+</span> <span class="n">xi_m</span><span class="p">)</span> <span class="o">-</span> <span class="n">xi_int</span>
+	<span class="k">if</span> <span class="n">keepnan</span><span class="p">:</span>
+		<span class="k">return</span> <span class="n">logr</span><span class="p">,</span> <span class="n">xi_p</span><span class="p">,</span> <span class="n">xi_p_im</span><span class="p">,</span> <span class="n">xi_m</span><span class="p">,</span> <span class="n">xi_c</span><span class="p">,</span> <span class="n">xi_x</span><span class="p">,</span> <span class="n">xi_y</span><span class="p">,</span> <span class="n">xi_z</span><span class="p">,</span> <span class="n">xi_e</span><span class="p">,</span> <span class="n">xi_b</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">return</span> <span class="n">logr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_p</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_p_im</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_m</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_c</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_x</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_y</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_z</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_e</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)],</span> <span class="n">xi_b</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logr</span><span class="p">)]</span> <span class="c1">#those are lots of functions =) </span></div>
+
+<div class="viewcode-block" id="plot_xi_average_full"><a class="viewcode-back" href="../index.html#covariance.plot_xi_average_full">[docs]</a><span class="k">def</span> <span class="nf">plot_xi_average_full</span><span class="p">(</span><span class="n">fits</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Plots the average two-point correlation function for all exposures in a given file. It plots all the components (E, B, +, -, x, y, c) and averages out over all the computed values</span>
+<span class="sd">	In the end, we get a plot with everything showing up beautifully</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">xip_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xim_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xip_im_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xi_c_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xi_x_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xi_y_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xi_e_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+	<span class="n">xi_b_av</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_bin</span><span class="p">)</span>
+
+	<span class="n">exp</span> <span class="o">=</span> <span class="n">get_Expo</span><span class="p">(</span><span class="n">fits</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">exp</span><span class="p">:</span>
+		<span class="k">try</span><span class="p">:</span> 
+			<span class="nb">print</span> <span class="n">i</span> 
+			<span class="n">logr</span><span class="p">,</span> <span class="n">xi_p</span><span class="p">,</span> <span class="n">xi_p_im</span><span class="p">,</span> <span class="n">xi_m</span><span class="p">,</span> <span class="n">xi_c</span><span class="p">,</span> <span class="n">xi_x</span><span class="p">,</span> <span class="n">xi_y</span><span class="p">,</span> <span class="n">xi_z</span><span class="p">,</span> <span class="n">xi_e</span><span class="p">,</span> <span class="n">xi_b</span> <span class="o">=</span> <span class="n">xi_full</span><span class="p">(</span><span class="s1">&#39;/Users/pedro/Documents/DES/dump/&#39;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s1">&#39;.fits&#39;</span><span class="p">)</span>
+			<span class="n">xip_av</span> <span class="o">+=</span> <span class="n">xi_p</span>
+			<span class="n">xim_av</span> <span class="o">+=</span> <span class="n">xi_m</span>
+			<span class="n">xip_im_av</span> <span class="o">+=</span> <span class="n">xi_p_im</span> 
+			<span class="n">xi_c_av</span> <span class="o">+=</span> <span class="n">xi_c</span>
+			<span class="n">xi_x_av</span> <span class="o">+=</span> <span class="n">xi_x</span>
+			<span class="n">xi_y_av</span> <span class="o">+=</span> <span class="n">xi_y</span>
+			<span class="n">xi_e_av</span> <span class="o">+=</span> <span class="n">xi_e</span>
+			<span class="n">xi_b_av</span> <span class="o">+=</span> <span class="n">xi_b</span>
+			<span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="n">exp</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xip_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;k-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_{+} (r)\rangle$&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xip_im_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;k--&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xim_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_{-} (r)\rangle$&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi_x_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;r-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_x (r) \rangle$&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi_y_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;c-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_y (r) \rangle$&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi_c_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;b:&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\langle \xi_{\times} (r) \rangle$&#39;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi_e_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;m-&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\langle \xi_E(r) \rangle$&quot;</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xi_b_av</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;m--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\langle \xi_B(r) \rangle$&quot;</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">logr</span><span class="p">,</span> <span class="n">xip_im_av</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">exp</span><span class="p">),</span> <span class="s1">&#39;k:&#39;</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\log(r) (\mathrm</span><span class="si">{deg}</span><span class="s2">)$&quot;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\xi(r) (\mathrm</span><span class="si">{mas}</span><span class="s2">^2)$&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Real and complex parts of $\xi$&quot;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+	<span class="n">legend</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shadow</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+	<span class="n">frame</span> <span class="o">=</span> <span class="n">legend</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;2pt_full.pdf&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ellipticity"><a class="viewcode-back" href="../index.html#covariance.ellipticity">[docs]</a><span class="k">def</span> <span class="nf">ellipticity</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Computes and plots the ellipticity vector (defined above) for the two-point correlation function, for a given catalog</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1">#Plots the ellipticity vector for the values of our 2pt corr.</span>
+	<span class="c1">#e1 = (xx - yy)/(xx + yy)</span>
+	<span class="c1">#e2 =  (xy + yx)/(xx + yy)</span>
+	<span class="n">data</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+	<span class="n">e1</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_X&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_Y&#39;</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_X&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_Y&#39;</span><span class="p">])</span>
+	<span class="n">e2</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_C&#39;</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_X&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;XI_Y&#39;</span><span class="p">])</span>
+
+	<span class="n">f1</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">])</span>
+	<span class="n">f2</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XY_COV&#39;</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;XX_COV&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;YY_COV&#39;</span><span class="p">])</span>
+
+
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">e1</span><span class="p">,</span> <span class="n">e2</span><span class="p">,</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+	<span class="c1">#plt.plot(f1, f2, &#39;.&#39;)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\xi_x &gt; \xi_y$; $\xi_{\times} &gt; 0$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.85</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\xi_x &lt; \xi_y$; $\xi_{\times} &gt; 0$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.75</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\xi_x &gt; \xi_y$; $\xi_{\times} &lt; 0$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.85</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.75</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\xi_x &lt; \xi_y$; $\xi_{\times} &lt; 0$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Ellipticity for the correlation function&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+	<span class="sd">&#39;&#39;&#39;plt.text(0.5, 0.75, r&#39;$\Sigma_{xx} &gt; \Sigma_{yy}$; $\Sigma_{xy} &gt; 0$&#39;, fontsize=13)</span>
+<span class="sd">	plt.text(-0.85, 0.75, r&#39;$\Sigma_{xx} &lt; \Sigma_{yy}$; $\Sigma_{xy} &gt; 0$&#39;, fontsize=13)</span>
+<span class="sd">	plt.text(0.5, -0.75, r&#39;$\Sigma_{xx} &gt; \Sigma_{yy}$; $\Sigma_{xy} &lt; 0$&#39;, fontsize=13)</span>
+<span class="sd">	plt.text(-0.85, -0.75, r&#39;$\Sigma_{xx} &lt; \Sigma_{yy}$; $\Sigma_{xy} &lt; 0$&#39;, fontsize=13)&#39;&#39;&#39;</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$e_1$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+	<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$e_2$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+
+	<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span>    
+	<span class="n">fig</span><span class="o">.</span><span class="n">set_size_inches</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;ellipticity.pdf&#39;</span><span class="p">)</span></div>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">for i in get_Expo(SAVE):</span>
+<span class="sd">	data_to_dump(SAVE, i)</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="c1">#plot_xi_average_full(SAVE)</span>
+
+<span class="c1">#xi_av_cat(SAVE)</span>
+
+<span class="c1">#hist(&#39;/Users/pedro/Dropbox/DES/2pt_and_cov.fits&#39;)</span>
+
+<span class="c1">#ellipticity(&#39;/Users/pedro/Dropbox/DES/2pt_and_cov.fits&#39;)</span>
+
+
+
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright  .
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
