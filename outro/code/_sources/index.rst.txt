@@ -1,0 +1,128 @@
+.. DESPM documentation master file, created by
+   sphinx-quickstart on Fri Jul 28 22:13:25 2017.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to DESPM's documentation!
+=================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+============================
+Database and auxiliary tools
+============================
+
+Data Management
+---------------
+.. automodule:: data_management
+	:members:
+
+
+Query
+-----
+.. automodule:: query
+	:members:
+
+
+Exposure Visualization
+-----------------------
+.. automodule:: show_exp
+	:members:
+
+
+Run Script
+----------
+.. automodule:: run_scr
+	:members:
+
+**Example code:**
+
+- This is the format for running on each tile of a zone, including the query:
+.. code-block:: python
+
+	tiles = ["DES0135-0416", "DES0135-0458", "DES0136-0541", "DES0136-0624",
+			 "DES0137-0707", "DES0137-0250", "DES0137-0333", "DES0138-0416",
+			 "DES0138-0458", "DES0139-0541", "DES0139-0624", "DES0140-0250",
+			 "DES0140-0707", "DES0140-0333", "DES0140-0416", "DES0141-0458",
+			 "DES0141-0541", "DES0142-0624", "DES0143-0250", "DES0143-0707",
+			 "DES0143-0333", "DES0143-0416", "DES0144-0458", "DES0144-0541",
+			 "DES0145-0624", "DES0146-0250", "DES0146-0707", "DES0146-0333",
+			 "DES0146-0416", "DES0147-0458", "DES0147-0541", "DES0148-0624",
+			 "DES0148-0250", "DES0148-0707", "DES0149-0333", "DES0149-0416",
+			 "DES0150-0458", "DES0150-0541", "DES0151-0624", "DES0151-0250",
+			 "DES0151-0707", "DES0152-0333", "DES0152-0416", "DES0152-0458",
+			 "DES0153-0541", "DES0154-0624", "DES0154-0250", "DES0154-0707"]
+
+	for i in tiles:
+		print i 
+		query_and_run(i, folder+'tiles/', '29', folder+'zone029.astro')
+
+- This is the format for running on a single finalcut + coadd pair:
+.. code-block:: python
+
+	run(folder+'zone029.astro', folder+'zone29_finalcut.fits', 
+		folder+'zone29_coadd.fits', folder+'zone29_', RA_0, DEC_0, nodes)
+
+
+================
+Catalog creation
+================
+
+Friends of Friends
+------------------
+.. automodule:: friends_of_friends
+	:members:
+
+
+Linear Fit
+----------
+.. automodule:: linearfit
+	:members:
+
+
+Projections
+-----------
+.. automodule:: projections
+	:members:
+
+.. _snap:
+
+SNAP
+----
+.. automodule:: snap
+	:members:
+
+
+SNAP plots
+----------
+.. automodule:: snap_plot
+	:members:
+
+
+================
+Further Analysis
+================
+
+Covariance
+----------
+.. automodule:: covariance
+	:members:
+
+
+
+Linking and Orbits
+-------------------
+.. automodule:: linking
+	:members:
