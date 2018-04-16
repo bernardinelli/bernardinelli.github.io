@@ -289,6 +289,16 @@ pre {
     }
 }
 
+.iconNoFill {
+
+    > svg {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        vertical-align: middle;
+
+    }
+}
 .post {
   font-family: "Source Sans Pro";
   font-size: 18px;
