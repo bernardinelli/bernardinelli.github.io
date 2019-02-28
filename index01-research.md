@@ -5,7 +5,7 @@ permalink: /research/
 ---
 
 ### PhD ###
-I'm currently working on identifying transient objects in the Dark Energy Survey. The focus of the project is on finding and characterizing trans-neptunian objects, which are distant objects in our Solar System beyond the orbit of Neptune and even Pluto. 
+I'm currently working on identifying trans-Neptunian objects in the Dark Energy Survey. These planetesimals are distant objects in the outskirts of our Solar System, tracing the formation history of the giant planets. As DES is not a solar system survey, this process is very challenging: we need to identify single-night transients (i.e. things that only appear in one place in one night) and link together detections forming orbits. 
 
 ### Undergraduate ###
 During my undergraduate years, I worked with prof. Raul Abramo with cosmological applications of supernovae Ia. Our main goal was to develop an observational strategy for the S-PLUS variability/SNe survey. 
