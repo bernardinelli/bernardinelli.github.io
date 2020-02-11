@@ -8,12 +8,12 @@ Olá, bem vindo a minha página pessoal. Espero que você já saiba quem eu sou 
 
 Meu nome é Pedro Bernardinelli e sou um estudante do programa de doutorado em física e astronomia da [University of Pennsylvania](https://www.physics.upenn.edu/people/graduate-students/pedro-henrique-bernardinelli) (PA - EUA; Ago 2016-), trabalhando em astrofísica do sistema solar com os professores Gary Bernstein e Masao Sako, fazendo parte do [Dark Energy Survey](https://www.darkenergysurvey.org).
 
-Me formei na [Universidade de São Paulo](http://portal.if.usp.br/ifusp/pt-br/users/bernardi) (SP - Brasil; Jan 2012-Dez 2015) e fiz iniciação científica em cosmologia de supernovas Ia com o professor Raul Abramo, fazendo parte das colaborações  [J-PAS](http://j-pas.org/ "Javalambre Physics of the Accelerating Universe Astrophysical Survey") e [S-PLUS](http://www.iag.usp.br/labcosmos/en/s-plus/ "Southern Photometric Local Universe Survey").
+Me formei na [Universidade de São Paulo](http://portal.if.usp.br/ifusp/pt-br/users/bernardi) (SP - Brasil; Jan 2012-Dez 2015) e fiz iniciação científica em cosmologia de supernovas Ia com o professor [Raul Abramo](http://fma.if.usp.br/~abramo/), fazendo parte das colaborações  [J-PAS](http://j-pas.org/ "Javalambre Physics of the Accelerating Universe Astrophysical Survey") e [S-PLUS](http://www.iag.usp.br/labcosmos/en/s-plus/ "Southern Photometric Local Universe Survey").
 
 Você pode me encontrar online em vários lugares. Além, é claro, daqui, também estou no [Orcid](https://orcid.org/0000-0003-0743-9422
- "Orcid ID"), no [Github](https://github.com/bernardinelli "Pedro Bernardinelli"), no [Quora](https://www.quora.com/profile/Pedro-Henrique-Bernardinelli "Pedro Bernardinelli"), escrevendo sempre que possível, no [Twitter](https://twitter.com/phbernardinelli), quando eu me lembro que existe, e no [Instagram](https://www.instagram.com/pedrohbernardinelli/) e no Facebook, mas você não deve se importar com eles. Também estou em outros lugares, mas estes são os mais importantes.
+ "Orcid ID"), no [Github](https://github.com/bernardinelli "Pedro Bernardinelli"), no [Quora](https://www.quora.com/profile/Pedro-Henrique-Bernardinelli "Pedro Bernardinelli"), escrevendo sempre que possível, no [Twitter](https://twitter.com/phbernardinelli), quando eu me lembro que existe, e no [Instagram](https://www.instagram.com/pedrohbernardinelli/) e no Facebook, mas você não deve se importar com eles. 
 
-Meus e-mails acadêmicos são <pedrobe@sas.upenn.edu> ou <bernardi@if.usp.br>. Se você quiser entrar em contato comigo sobre outras coisas, por favor use <pedro@bernardinelli.org>. Tenho vários outros endereços de e-mail, mas vamos nos concentrar nestes três por enquanto!
+Meu e-mail acadêmico é <pedrobe@sas.upenn.edu>. Se você quiser entrar em contato comigo sobre outras coisas, por favor use <pedro@bernardinelli.org>. 
 
 
 
