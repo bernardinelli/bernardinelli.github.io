@@ -17,11 +17,13 @@ With this data, I also examined our extreme trans-Neptunian objects, those with 
 {: refdef}
 
 The more challenging search over the full six years of data from DES built upon our previous search, and led to an impressive total of 814 objects. This was an incredibly challenging search, as the computational time approached 20 million CPU-hours. In addition to the extra two years of data, we also had deeper catalogs due to some optimizations I developed for the DES image processing pipeline. I have also developed [survey simulation](https://github.com/bernardinelli/DESTNOSIM) software for DES, enabling statistical comparisons of theoretical models of the outer Solar System to our data. This analysis is presented in detail in [Bernardinelli et al 2021 - 2109.03758](https://arxiv.org/abs/2109.03758). The full catalog can be found [here](/downloads/y6_table.fits).
+{:refdef: style="text-align: center;"}
 ![813 Outer Solar System objects in the DES](/images/aei.png){:height="70%" width="70%"}
 {: refdef}
 
 
 As a part of this Year 6 search, we have found something quite unexpected, but really interesting: the comet C/2014 UN<sub>271</sub> (Bernardinelli-Bernstein). This object is fascinating by a number of reasons: it's a comet discovered at almost 30 au and, given how far it was in the first few DES images of it, it didn't show noticeable activity. It's also quite large for a comet, with a diameter estimated at about 150 km (depending on your choice of albedo, of course), making it one of the largest comets ever found! We have conducted a detailed study of its orbit, past dynamics and activity in a combination of DES + a few other surveys images of it from 2010 to 2020, presented in detail at [Bernardinelli, Bernstein et al 2021 - 2109.09852](https://arxiv.org/abs/2109.09852). 
+{:refdef: style="text-align: center;"}
 ![NoirLab press release image of Comet B-B](/images/cometbb.png){:height="70%" width="70%"}
 {: refdef}
 
