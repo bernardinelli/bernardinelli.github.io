@@ -19,6 +19,3 @@ Infelizmente, já vi esse material em sites de vendas de apostilas sem a minha p
 
 [Nazgûlcon 2014](http://bernardinelli.org/downloads/nazgulcon.pdf)
 
-
-Recomendo também o [Quenya101](http://quenya101.com) para informações mais avançadas e detalhadas sobre este assunto.
-Se precisar entrar em contato comigo, use [este](mailto:ondo@quenya101.com) e-mail. 
