@@ -5,7 +5,33 @@ permalink: /mpec/
 exclude: true  
 ---  
 This page has a compilation of Minor Planet Electronic Circulars and other similar publications that I have been a part of. Thanks to [Jost Jahn](http://mpec.jostjahn.de) for compiling the MPECs!  
-  
+
+#### MPEC - DEEP B1
+[MPEC 2023-X34 : 2021 RM238](https://minorplanetcenter.net/mpec/K23/K23X34.html)
+[MPEC 2023-X33 : 2019 QF112](https://minorplanetcenter.net/mpec/K23/K23X33.html)
+[MPEC 2023-X32 : 2019 QE112](https://minorplanetcenter.net/mpec/K23/K23X32.html)
+[MPEC 2023-X31 : 2021 TK192](https://minorplanetcenter.net/mpec/K23/K23X31.html)
+[MPEC 2023-X30 : 2021 TJ192](https://minorplanetcenter.net/mpec/K23/K23X30.html)
+[MPEC 2023-X29 : 2021 TH192](https://minorplanetcenter.net/mpec/K23/K23X29.html)
+[MPEC 2023-X28 : 2019 QD112](https://minorplanetcenter.net/mpec/K23/K23X28.html)
+[MPEC 2023-W158 : TWELVE NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WF8.html) 
+[MPEC 2023-W157 : ELEVEN NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WF7.html) 
+[MPEC 2023-W155 : EIGHT NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WF5.html) 
+[MPEC 2023-W154 : 2021 RK237](https://www.minorplanetcenter.net/mpec/K23/K23WF4.html)
+[MPEC 2023-W153 : NINE NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WF3.html) 
+[MPEC 2023-W152 : SEVEN NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WF2.html) 
+[MPEC 2023-W149 : EIGHT NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WE9.html) 
+[MPEC 2023-W148 : EIGHT NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WE8.html) 
+[MPEC 2023-W147 : TWO NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WE7.html) 
+[MPEC 2023-W146 : 2020 UZ73](https://www.minorplanetcenter.net/mpec/K23/K23WE6.html) 
+[MPEC 2023-W145 : EIGHT NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WE5.html) 
+[MPEC 2023-W141 : 2019 QG110](https://www.minorplanetcenter.net/mpec/K23/K23WE1.html) 
+[MPEC 2023-W140 : 2019 QF110](https://www.minorplanetcenter.net/mpec/K23/K23WE0.html) 
+[MPEC 2023-W139 : TEN NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WD9.html) 
+[MPEC 2023-W137 : 2019 SB235](https://www.minorplanetcenter.net/mpec/K23/K23WD7.html) 
+[MPEC 2023-W136 : EIGHT NEW TNOS](https://www.minorplanetcenter.net/mpec/K23/K23WD6.html) 
+
+
 #### MPEC - DESY6  
 [MPEC 2021-T235 : 2015 TX363 = 2016 ST55](https://www.minorplanetcenter.net/mpec/K21/K21TN5.html)    
 [MPEC 2021-S134 : 2002 PG150](https://www.minorplanetcenter.net/mpec/K21/K21SD4.html)  
@@ -60,10 +86,10 @@ This page has a compilation of Minor Planet Electronic Circulars and other simil
 #### 2014 UN271  
 [MPEC 2021-M83 : COMET C/2014 UN271 (Bernardinelli-Bernstein)](https://www.minorplanetcenter.net/mpec/K21/K21M83.html)     
 [MPEC 2021-M53 : 2014 UN271](https://www.minorplanetcenter.net/mpec/K21/K21M53.html)     
-[CBET 4983: 2014 UN_271](http://www.cbat.eps.harvard.edu/iau/cbet/004900/CBET004983.txt) ([mirror](http://mail.spaceobs.com/pipermail/iaude_spaceobs.com/2021-June/040367.html))  
+[CBET 4983 : 2014 UN_271](http://www.cbat.eps.harvard.edu/iau/cbet/004900/CBET004983.txt) ([mirror](http://mail.spaceobs.com/pipermail/iaude_spaceobs.com/2021-June/040367.html))  
   
   
-#### MPEC - DESY4 and prior submissions  
+#### MPEC - DESY4 
 [MPEC 2020-C88 : 131 NEW DISTANT OBJECTS](https://www.minorplanetcenter.net/mpec/K20/K20C88.html)     
 [MPEC 2020-C87 : 2016 TT94](https://www.minorplanetcenter.net/mpec/K20/K20C87.html)    
 [MPEC 2020-C86 : 2016 TS94 = 2016 TV94](https://www.minorplanetcenter.net/mpec/K20/K20C86.html)    
@@ -78,6 +104,19 @@ This page has a compilation of Minor Planet Electronic Circulars and other simil
 [MPEC 2020-C73 : 2007 TB418](https://www.minorplanetcenter.net/mpec/K20/K20C73.html)    
 [MPEC 2020-C72 : 2013 RS109](https://www.minorplanetcenter.net/mpec/K20/K20C72.html)    
 [MPEC 2020-C71 : 2013 RR109](https://www.minorplanetcenter.net/mpec/K20/K20C71.html)    
+
+#### MPEC - Other Submissions
+[MPEC 2023-K16 : 2015 MQ204](https://www.minorplanetcenter.net/mpec/K23/K23K16.html)
+[MPEC 2023-K52 : 2014 WL616](https://www.minorplanetcenter.net/mpec/K23/K23K52.html)
+[MPEC 2023-O125 : 2015 AB309](https://www.minorplanetcenter.net/mpec/K23/K23OC5.html)
+[MPEC 2023-P08 : 2011 WW188](https://www.minorplanetcenter.net/mpec/K23/K23P08.html)
+[MPEC 2023-P09 : 2014 NB96](https://www.minorplanetcenter.net/mpec/K23/K23P09.html)
+[MPEC 2023-P10 : 2015 LA65](https://www.minorplanetcenter.net/mpec/K23/K23P10.html)
+[MPEC 2023-P12 : 2014 HJ344](https://www.minorplanetcenter.net/mpec/K23/K23P12.html)
+[MPEC 2023-P13 : 2014 PZ102](https://www.minorplanetcenter.net/mpec/K23/K23P13.html)
+[MPEC 2023-P14 : 2014 YD100](https://www.minorplanetcenter.net/mpec/K23/K23P14.html)
+[MPEC 2023-P15 : 2011 RS](https://www.minorplanetcenter.net/mpec/K23/K23P15.html)
+[MPEC 2023-Q157 : 2010 RJ226](https://www.minorplanetcenter.net/mpec/K23/K23QF7.html)
 [MPEC 2018-M77 : 2014 SO350](https://www.minorplanetcenter.net/mpec/K18/K18M77.html)    
 [MPEC 2018-J36 : 2015 BP519](https://www.minorplanetcenter.net/mpec/K18/K18J36.html)    
   
