@@ -23,10 +23,10 @@ $grey-color-light: lighten($grey-color, 0%);
 $grey-color-dark:  darken($grey-color, 5%);
 
 // Width of the content area
-$content-width:    1200px;
+$content-width:    1600px;
 
-$on-palm:          600px;
-$on-laptop:        1200px;
+$on-palm:          800px;
+$on-laptop:        1600px;
 
 
 
@@ -146,7 +146,7 @@ h1, h2, h3, h4, h5, h6 {
  * Links
  */
 a {
-    color: #aaa !important;
+    color: #ff9900 !important;
     text-decoration: none;
 
     &:visited {
