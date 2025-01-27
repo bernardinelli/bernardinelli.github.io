@@ -154,7 +154,7 @@ a {
     }
 
     &:hover {
-        color: black !important;
+        color: $brand-color !important;
         border-bottom: 1px dotted black ;
     }
 
@@ -165,7 +165,7 @@ a {
       }
     }
     &.postLink{
-      color: black !important;
+      color: #ff9900 !important;
       &:hover {
 
           border-bottom: 1px dotted black ;
