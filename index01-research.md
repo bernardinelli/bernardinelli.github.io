@@ -10,6 +10,8 @@ My research is primarily focused on the discovery, physical/dynamical characteri
 - [The DECam Ecliptic Exploration Project](#the-decam-ecliptic-exploration-project)
 - [The Legacy Survey of Space and Time](#the-legacy-survey-of-space-and-time)
 
+---
+
 ### The Dark Energy Survey ###
 I developed a series novel methodologies for identifying and characterizing trans-Neptunian objects (TNOs) in the temporally sparse data taken by the Dark Energy Survey (DES). As DES is not a Solar System survey, this process was very challenging, requiring significant computation time (approaching 20 million CPU-hours) for the search over the full dataset. The pipeline is presented in [Bernardinelli et al 2020 -- ApJS, 247, 32](https://iopscience.iop.org/article/10.3847/1538-4365/ab6bd8), and the final results in [Bernardinelli et al 2022 -- ApJS, 258, 41](https://ui.adsabs.harvard.edu/abs/2022ApJS..258...41B/abstract). This led to a catalog of 814 outer Solar System objects in this dataset. The DES surveys also enabled the estimates of color and lightcurve amplitudes for all of these objects, producing the largest contemporaneous catalog of such properties. The full catalog of orbits and photometric measurements can be found [here](https://github.com/bernardinelli/des_tno_catalog). This process, as well as analysis of the lightcurve distribution of TNOs, is described in detail in [Bernardinelli et al 2023 --  ApJS, 269, 18](https://iopscience.iop.org/article/10.3847/1538-4365/acf6bf).
 {:refdef: style="text-align: center;"}
