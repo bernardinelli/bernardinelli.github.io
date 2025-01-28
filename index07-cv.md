@@ -9,5 +9,7 @@ permalink: /cv/
 See also:
 - [ADS publication library](https://ui.adsabs.harvard.edu/public-libraries/qUR2U9_SQLScOJCUtxKUZA)
 - [ORCID](https://orcid.org/0000-0003-0743-9422)
+- [Google Scholar](https://scholar.google.com/citations?user=KK5AaY4AAAAJ&hl=en)
 - [Lattes](http://lattes.cnpq.br/2191790769808072) (in Portuguese)
+- [List of publications](/index08-pubs.md)
 

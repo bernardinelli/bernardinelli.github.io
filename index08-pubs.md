@@ -65,7 +65,7 @@ permalink: /pubs/
 -   [*The DECam Ecliptic Exploration Project (DEEP). I. Survey description, science questions, and technical demonstration*](https://ui.adsabs.harvard.edu/abs/2024AJ....167..132T/abstract)\
     D. E. Trilling, et al. (includes **P. H. Bernardinelli**) -- 2024, AJ, 167, 3, 132 (9 pp.)
 -   [*Main belt asteroids taxonomical information from dark energy survey data*](https://ui.adsabs.harvard.edu/abs/2024MNRAS.527.6495C/abstract)\
-     V. Carruba, et al. (includes **P. H. Bernardinelli**) -- 2024, MNRAS, 527, 3, pp. 6495--6505\
+     V. Carruba, et al. (includes **P. H. Bernardinelli**) -- 2024, MNRAS, 527, 3, pp. 6495--6505
 -   [*Designing an Optimal Kilonova Search Using DECam for Gravitational-wave Events*](https://ui.adsabs.harvard.edu/abs/2024ApJ...960..122B/abstract)\
     C. R. Bom, et al. (includes **P. H. Bernardinelli**) -- 2024, AJ, 960, 2, 122 (21 pp.)
 -   [*Tuning the Legacy Survey of Space and Time (LSST) Observing Strategy for Solar System Science*](https://ui.adsabs.harvard.edu/abs/2023ApJS..266...22S/abstract)\

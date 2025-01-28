@@ -29,6 +29,8 @@ As a part of this search, we have found something quite unexpected, but fascinat
 
 I am also one of the conveners of the DES transients and moving objects (TMO) group, the working group responsible, among other things, for Solar System studies in DES. 
 
+---
+
 ### The DECam Ecliptic Exploration Project ###
 The DECam Ecliptic Exploration Project (DEEP) survey is a project dedicated to finding small TNOs in the ecliptic plane. With a specialized strategy of observing a given field continuously for a period of four hours, DEEP enables the discovery of much fainter objects than most surveys. While surveys like DES find Kuiper belt objects of about 100 km in diameter, DEEP can find such objects with a diameter of 40 km. By finding objects with these smaller sizes, we are able to probe a different regime of the size-frequency-distribution of TNOs, delving into the planetesimal formation mechanism.
 
@@ -36,6 +38,8 @@ Our first analysis of the multi-year DEEP data led to the discovery of 110 objec
 {:refdef: style="text-align: center;"}
 ![DEEP B1 TNOs](/images/deep.png){:height="60%" width="60%"}
 {: refdef}
+
+---
 
 ### The Legacy Survey of Space and Time ###
 The Vera Rubin's Legacy Survey of Space and Time (LSST) is an upcoming survey that will present a once in a generation leap in Solar System science. One of the survey's primary goals is to conduct an inventory of the small body populations of our Solar System. As part of the LSST commissioning team, I helped develop the [LSST Data Preview 0.3](https://dp0-3.lsst.io/index.html), the first Solar System data release, a full-scale simulated catalog of objects that represents realistic expectations of what LSST is expected to discover during its 10 years of operations. I am also the current chair of the LSST Outer Solar System working group. 
