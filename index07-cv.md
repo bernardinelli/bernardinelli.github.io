@@ -3,7 +3,7 @@ title: "CV"
 layout: page
 permalink: /cv/
 ---
-<iframe src="https://docs.google.com/file/d/189rz6r4C7gRKUvagPIC17vQpXfSUgU8s/preview" width="60%"></iframe>
+<iframe src="https://docs.google.com/file/d/189rz6r4C7gRKUvagPIC17vQpXfSUgU8s/preview" width="60%" height="750"></iframe>
 
 
 See also:
