@@ -14,31 +14,22 @@ permalink: /pubs/
 
 -   [ADS library](https://ui.adsabs.harvard.edu/public-libraries/qUR2U9_SQLScOJCUtxKUZA)
 
--   [GoogleScholar](https://scholar.google.com/citations?user=KK5AaY4AAAAJ&hl=en)
+-   [Google Scholar](https://scholar.google.com/citations?user=KK5AaY4AAAAJ&hl=en)
 
 -   [Lattes](http://lattes.cnpq.br/2191790769808072) (in Portuguese)
 
--   [ORCID 0000-0003-0743-9422](https://orcid.org/0000-0003-0743-9422)
+-   [ORCID](https://orcid.org/0000-0003-0743-9422)
 
 -   [List of Minor Planet Electronic Circulars and telegrams](http://pbernardinelli.com/mpec/)
 
 # Major contributions
 
--   *Photometry of outer Solar System objects from the Dark Energy Survey II: a joint analysis of trans-Neptunian absolute magnitudes, colors, lightcurves and dynamics*\
-    [`doi:10.48550/arXiv.2501.01551`](https://ui.adsabs.harvard.edu/abs/2025arXiv250101551B/abstract),
-    2025, AJ submitted (52 pp.)\
-    **P. H. Bernardinelli**, G. M. Bernstein, et al.
-
--   *A Well-Characterized Survey for Centaurs in Pan-STARRS1*\
-    [`doi:10.3847/1538-3881/ad9a58`](https://ui.adsabs.harvard.edu/abs/2025AJ....169...73K/abstract),
-    2025, AJ, 169, 73 (13 pp.)\
-    J. Kurlander, M. Holman, **P. H. Bernardinelli**, et al.
-
--   *Could the perfect stellar fly-by have shaped our Solar System?*\
-    [`doi:10.1038/s41550-024-02409-2`](https://ui.adsabs.harvard.edu/abs/2024NatAs...8.1354B/abstract),
-    2024, Nature Astronomy, Volume 8, pp. 1354-1355\
-    **P. H. Bernardinelli**
-
+-   [*Photometry of outer Solar System objects from the Dark Energy Survey II: a joint analysis of trans-Neptunian absolute magnitudes, colors, lightcurves and dynamics*](https://ui.adsabs.harvard.edu/abs/2025arXiv250101551B/abstract)\
+    **P. H. Bernardinelli**, G. M. Bernstein, et al., 2025, AJ submitted (52 pp.)
+-   [*A Well-Characterized Survey for Centaurs in Pan-STARRS1*](https://ui.adsabs.harvard.edu/abs/2025AJ....169...73K/abstract)
+     J. Kurlander, M. Holman, **P. H. Bernardinelli**, et al., 2025, AJ, 169, 73 (13 pp.)
+-   [*Could the perfect stellar fly-by have shaped our Solar System?*](https://ui.adsabs.harvard.edu/abs/2024NatAs...8.1354B/abstract)\
+     **P. H. Bernardinelli**, 2024, Nature Astronomy, Volume 8, pp. 1354-1355
 -   *The DECam Ecliptic Exploration Project (DEEP). VI. first multi-year observations of trans-Neptunian objects*\
     [`doi:10.3847/1538-3881/ad1524`](https://ui.adsabs.harvard.edu/abs/2024AJ....167..136S/abstract),
     2024, AJ, 167, 3, 136 (14 pp.)\
