@@ -12,8 +12,8 @@ permalink: /pubs/
 ---
 
 # Major contributions
--   [*Photometry of outer Solar System objects from the Dark Energy Survey II: a joint analysis of trans-Neptunian absolute magnitudes, colors, lightcurves and dynamics*](https://ui.adsabs.harvard.edu/abs/2025arXiv250101551B/abstract)\
-    **P. H. Bernardinelli**, G. M. Bernstein, et al. -- 2025, AJ submitted (52 pp.)
+-   [*Photometry of Outer Solar System Objects from the Dark Energy Survey. II. A Joint Analysis of Trans-Neptunian Absolute Magnitudes, Colors, Light Curves and Dynamics*](https://ui.adsabs.harvard.edu/abs/2025AJ....169..305B/abstract)\
+    **P. H. Bernardinelli**, G. M. Bernstein, et al. -- 2025, AJ, 169, 305 (31 pp.)
 -   [*A Well-Characterized Survey for Centaurs in Pan-STARRS1*](https://ui.adsabs.harvard.edu/abs/2025AJ....169...73K/abstract)\
      J. Kurlander, M. Holman, **P. H. Bernardinelli**, et al. -- 2025, AJ, 169, 73 (13 pp.)
 -   [*Could the perfect stellar fly-by have shaped our Solar System?*](https://ui.adsabs.harvard.edu/abs/2024NatAs...8.1354B/abstract)\
@@ -46,6 +46,8 @@ permalink: /pubs/
 ---
 
 # Minor contributions
+-   [*Year six photometric measurements of known Trans-Neptunian Objects and Centaurs by the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2025MNRAS.tmp..621F/abstract)\ F. S. Ferreira et al (includes **P. H. Bernardinelli**) -- 2025, MNRAS (23 pp.)
+-   [*An Extremely Deep Rubin Survey to Explore the Extended Kuiper Belt and Identify Objects Observable by New Horizons*](https://ui.adsabs.harvard.edu/abs/2025arXiv250302765K/abstract)\ JJ Kavelaars et al. (includes **P. H. Bernardinelli**) -- 2025 (20 pp.)  
 -   [*AI-enhanced Citizen Science Discovers Cometary Activity on Near-Earth Object (523822) 2012 DG61*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9....3C/abstract)\
     C. O. Chandler et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 1, id.3 (2 pp.)
 -   [*Dark Energy Survey Year 6 Results: Photometric Data Set for Cosmology*](https://ui.adsabs.harvard.edu/abs/2025arXiv250105739B/abstract)\
