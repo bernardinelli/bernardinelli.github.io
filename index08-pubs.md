@@ -49,7 +49,7 @@ permalink: /pubs/
 -   [*Year six photometric measurements of known Trans-Neptunian Objects and Centaurs by the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2025MNRAS.tmp..621F/abstract)\ 
     F. S. Ferreira et al (includes **P. H. Bernardinelli**) -- 2025, MNRAS (23 pp.)
 -   [*An Extremely Deep Rubin Survey to Explore the Extended Kuiper Belt and Identify Objects Observable by New Horizons*](https://ui.adsabs.harvard.edu/abs/2025arXiv250302765K/abstract)\ 
-    JJ Kavelaars et al. (includes **P. H. Bernardinelli**) -- 2025 (20 pp.)  
+    JJ Kavelaars et al. (includes **P. H. Bernardinelli**) -- 2025, ApJS in review (20 pp.)  
 -   [*AI-enhanced Citizen Science Discovers Cometary Activity on Near-Earth Object (523822) 2012 DG61*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9....3C/abstract)\
     C. O. Chandler et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 1, id.3 (2 pp.)
 -   [*Dark Energy Survey Year 6 Results: Photometric Data Set for Cosmology*](https://ui.adsabs.harvard.edu/abs/2025arXiv250105739B/abstract)\
