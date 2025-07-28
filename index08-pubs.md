@@ -12,13 +12,13 @@ permalink: /pubs/
 ---
 
 # Major contributions
--   [*NSF-DOE Vera C. Rubin Observatory Observations of Interstellar Comet 3I/ATLAS (C/2025 N1)*](https://ui.adsabs.harvard.edu/abs/2025arXiv250713409C/abstract)\ 
+-   [*NSF-DOE Vera C. Rubin Observatory Observations of Interstellar Comet 3I/ATLAS (C/2025 N1)*](https://ui.adsabs.harvard.edu/abs/2025arXiv250713409C/abstract)\
     C. O. Chandler, **P. H. Bernardinelli**, M. Jurić, et al -- 2025, arXiv
 -   [*Predictions of the LSST Solar System Yield: Near-Earth Objects, Main Belt Asteroids, Jupiter Trojans, and Trans-Neptunian Objects*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...99K/abstract)\
     J. A. Kurlander, **P. H. Bernardinelli**, et al. --  2025, AJ, 170, 2, 99 (19 pp.) 
 -   [*Sorcha: Optimized Solar System Ephemeris Generation*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...97H/abstract)\
     M. J. Holman, **P. H. Bernardinelli**, M. E. Schwamb, et al. -- 2025, AJ, 170, 2, 97 (10 pp.)
--   [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://ui.adsabs.harvard.edu/abs/2025AJ....170..100M/abstract)\ 
+-   [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://ui.adsabs.harvard.edu/abs/2025AJ....170..100M/abstract)\
     S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**, et al. -- 2025, AJ, 170, 2, 100 (41 pp.)   
 -   [*Photometry of Outer Solar System Objects from the Dark Energy Survey. II. A Joint Analysis of Trans-Neptunian Absolute Magnitudes, Colors, Light Curves and Dynamics*](https://ui.adsabs.harvard.edu/abs/2025AJ....169..305B/abstract)\
     **P. H. Bernardinelli**, G. M. Bernstein, et al. -- 2025, AJ, 169, 305 (31 pp.)
