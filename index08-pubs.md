@@ -12,6 +12,14 @@ permalink: /pubs/
 ---
 
 # Major contributions
+-   [*NSF-DOE Vera C. Rubin Observatory Observations of Interstellar Comet 3I/ATLAS (C/2025 N1)*](https://ui.adsabs.harvard.edu/abs/2025arXiv250713409C/abstract)\ 
+    C. O. Chandler, **P. H. Bernardinelli**, M. Jurić, et al -- 2025, arXiv
+-   [*Predictions of the LSST Solar System Yield: Near-Earth Objects, Main Belt Asteroids, Jupiter Trojans, and Trans-Neptunian Objects*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...99K/abstract)\
+    J. A. Kurlander, **P. H. Bernardinelli**, et al. --  2025, AJ, 170, 2, 99 (19 pp.) 
+-   [*Sorcha: Optimized Solar System Ephemeris Generation*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...97H/abstract)\
+    M. J. Holman, **P. H. Bernardinelli**, M. E. Schwamb, et al. -- 2025, AJ, 170, 2, 97 (10 pp.)
+-   [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://ui.adsabs.harvard.edu/abs/2025AJ....170..100M/abstract)\ 
+    S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**, et al. -- 2025, AJ, 170, 2, 100 (41 pp.)   
 -   [*Photometry of Outer Solar System Objects from the Dark Energy Survey. II. A Joint Analysis of Trans-Neptunian Absolute Magnitudes, Colors, Light Curves and Dynamics*](https://ui.adsabs.harvard.edu/abs/2025AJ....169..305B/abstract)\
     **P. H. Bernardinelli**, G. M. Bernstein, et al. -- 2025, AJ, 169, 305 (31 pp.)
 -   [*A Well-Characterized Survey for Centaurs in Pan-STARRS1*](https://ui.adsabs.harvard.edu/abs/2025AJ....169...73K/abstract)\
@@ -27,17 +35,17 @@ permalink: /pubs/
 -  [*Photometry of outer Solar System objects from the Dark Energy Survey I: photometric methods, light curve distributions and trans-Neptunian binaries*](https://ui.adsabs.harvard.edu/abs/2023ApJS..269...18B/abstract)\
      **P. H. Bernardinelli**, G. M. Bernstein, N. Jindal, et al. -- 2023, ApJS, 269, 18 (17 pp.)
 -   [*Synchronous rotation in the (136199) Eris-Dysnomia system*](https://ui.adsabs.harvard.edu/abs/2023PSJ.....4..115B/abstract)\
-        G. M. Bernstein, B. J. Holler, R. Navarro-Escamilla, **P. H. Bernardinelli**, et al. -- 2023, PSJ, 4, 115 (17 pp.)
+    G. M. Bernstein, B. J. Holler, R. Navarro-Escamilla, **P. H. Bernardinelli**, et al. -- 2023, PSJ, 4, 115 (17 pp.)
 -   [*Limits on the Detection of Planet Nine in the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2022AJ....163..216B/abstract)\
-        M. Belyakov, **P. H. Bernardinelli**, M. E. Brown -- 2022, AJ, 163, 216 (6 pp.)
+    M. Belyakov, **P. H. Bernardinelli**, M. E. Brown -- 2022, AJ, 163, 216 (6 pp.)
 -   [*A search of the full six years of the Dark Energy Survey for outer Solar System objects*](https://ui.adsabs.harvard.edu/abs/2022ApJS..258...41B/abstract)\
     **P. H. Bernardinelli**, G. M. Bernstein, M. Sako, et al. -- 2022, ApJS, 258, 41 (20 pp.)
 -   [*Enhancing Ground-based Observations of Trans-Neptunian Objects Using a Single-epoch Parallax Measurement from L2*](https://ui.adsabs.harvard.edu/abs/2021PASP..133k4401G/abstract)\
-     M. R. Giovinazzi, C. H. Blake, **P. H. Bernardinelli** -- 2021, PASP, 133, 114401 (9 pp.)
+    M. R. Giovinazzi, C. H. Blake, **P. H. Bernardinelli** -- 2021, PASP, 133, 114401 (9 pp.)
 -   [*C/2014 UN$_{271}$ (Bernardinelli-Bernstein): the nearly spherical cow of comets*](https://ui.adsabs.harvard.edu/abs/2021ApJ...921L..37B/abstract)\
     **P. H. Bernardinelli**, G. M. Bernstein, B. T. Montet, et al. -- 2021, ApJL, 921, L37 (14 pp.)
 -   [*Reducing ground-based astrometric errors with Gaia and Gaussian processes*](https://ui.adsabs.harvard.edu/abs/2021AJ....162..106F/abstract)\
-   W. F. Fortino, G. M. Bernstein, **P. H. Bernardinelli**, et al. --  2021, AJ, 162, 106 (14 pp.)
+    W. F. Fortino, G. M. Bernstein, **P. H. Bernardinelli**, et al. --  2021, AJ, 162, 106 (14 pp.)
 -   [*Testing the isotropy of the Dark Energy Survey's extreme trans-Neptunian objects*](https://ui.adsabs.harvard.edu/abs/2020PSJ.....1...28B/abstract)\
     **P. H. Bernardinelli**, G. M. Bernstein, M. Sako, et al. -- 2020, PSJ, 1, 28 (7 pp.)
 -   [*Trans-Neptunian objects in the first four years of the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2020ApJS..247...32B/abstract)\
@@ -46,14 +54,18 @@ permalink: /pubs/
 ---
 
 # Minor contributions
+-   [*Predictions of the LSST Solar System Yield: Discovery Rates and Characterizations of Centaurs*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...98M/abstract)\
+    J. Murtagh, M. E. Schwamb, S. R. Merritt, **P. H. Bernardinelli**, et al. -- AJ, 170, 2, 98 (18 pp.) 
+-   [*Monitoring of asteroids in cometary orbits and activated asteroids through archival images and new observations*](https://ui.adsabs.harvard.edu/abs/2025A%26A...698A.117M/abstract)\
+    S. Martino, et al. (includes **P. H. Bernardinelli**)  -- A\&A, 698, A117 (16 pp.) 
 -   [*Year six photometric measurements of known Trans-Neptunian Objects and Centaurs by the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2025MNRAS.tmp..621F/abstract)\
-    F. S. Ferreira et al (includes **P. H. Bernardinelli**) -- 2025, MNRAS (23 pp.)
+    F. S. Ferreira, et al. (includes **P. H. Bernardinelli**) -- 2025, MNRAS, 540, 1, pp. 460–482
 -   [*An Extremely Deep Rubin Survey to Explore the Extended Kuiper Belt and Identify Objects Observable by New Horizons*](https://ui.adsabs.harvard.edu/abs/2025arXiv250302765K/abstract)\
-    JJ Kavelaars et al. (includes **P. H. Bernardinelli**) -- 2025, ApJS in review (20 pp.)  
+    JJ Kavelaars, et al. (includes **P. H. Bernardinelli**) -- 2025, ApJS in review (20 pp.)  
 -   [*AI-enhanced Citizen Science Discovers Cometary Activity on Near-Earth Object (523822) 2012 DG61*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9....3C/abstract)\
-    C. O. Chandler et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 1, id.3 (2 pp.)
+    C. O. Chandler, et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 1, id.3 (2 pp.)
 -   [*Dark Energy Survey Year 6 Results: Photometric Data Set for Cosmology*](https://ui.adsabs.harvard.edu/abs/2025arXiv250105739B/abstract)\
-   K. Bechtol et al. (includes **P. H. Bernardinelli**) -- 2025 (27 pp.)
+   K. Bechtol, et al. (includes **P. H. Bernardinelli**) -- 2025 (27 pp.)
 -   [*The DECam Ecliptic Exploration Project (DEEP). VII. The Strengths of Three Superfast Rotating Main-belt Asteroids from a Preliminary Search of DEEP Data*](https://ui.adsabs.harvard.edu/abs/2024AJ....168..184S/abstract)\
     R. Strass, et al. (includes **P. H. Bernardinelli**) -- 2024, AJ, 168, 4, 184 (8 pp.)
 -   [*The Dark Energy Survey: Cosmology Results with ∼1500 New High-redshift Type Ia Supernovae Using the Full 5 yr Data Set*](https://ui.adsabs.harvard.edu/abs/2024ApJ...973L..14A/abstract)\
