@@ -12,8 +12,13 @@ permalink: /pubs/
 ---
 
 # Major contributions
+  - [*Predictions of the LSST Solar System Yield: Neptune Trojans*]({https://scixplorer.org/abs/2026AJ....171...90M/abstract)\
+  J. Murtagh, M. E. Schwamb, **P. H. Bernardinelli**, et al. -- 2026, AJ, 171, 2, 90 (21 pp.)
+ -  [*An Efficient Shift-and-stack Algorithm Applied to Detection Catalogs*](https://scixplorer.org/abs/2025AJ....170..352S/abstract)\
+ S. Stetzler, M. Jurić, **P. H. Bernardinelli**, et al. -- 2025, AJ, 170, 6, 352 (20 pp.)
+-  [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://scixplorer.org/abs/2025JOSS...10.8145M/abstract)\  S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**, et al. -- 2025, JOSS, 10, 114, id. 8145 (6 pp.)
 -   [*NSF-DOE Vera C. Rubin Observatory Observations of Interstellar Comet 3I/ATLAS (C/2025 N1)*](https://ui.adsabs.harvard.edu/abs/2025arXiv250713409C/abstract)\
-    C. O. Chandler, **P. H. Bernardinelli**, M. Jurić, et al -- 2025, arXiv
+    C. O. Chandler, **P. H. Bernardinelli**, M. Jurić, et al. -- 2025, arXiv
 -   [*Predictions of the LSST Solar System Yield: Near-Earth Objects, Main Belt Asteroids, Jupiter Trojans, and Trans-Neptunian Objects*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...99K/abstract)\
     J. A. Kurlander, **P. H. Bernardinelli**, et al. --  2025, AJ, 170, 2, 99 (19 pp.) 
 -   [*Sorcha: Optimized Solar System Ephemeris Generation*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...97H/abstract)\
@@ -54,6 +59,13 @@ permalink: /pubs/
 ---
 
 # Minor contributions
+-   [*Dark Energy Survey Year 6 Results: Photometric Data Set for Cosmology*](https://scixplorer.org/abs/2026ApJS..282...62B/abstract)\
+   K. Bechtol, et al. (includes **P. H. Bernardinelli**) -- 2026, ApJS, 282, 2, id.62  (24 pp.)
+- [*Rotational Light-Curve Recovery & Predictions of the LSST Yield of Hildas*](https://scixplorer.org/abs/2025arXiv251200624F/abstract)\
+A J. Fleming, et al. (includes **P. H. Bernardinelli**) -- 2025 (12 pp.) 
+- [*Recommendations for the Vera C. Rubin Observatory Early Science Schedule*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9..244S/abstract)\
+M. E. Schwamb, et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 9, 244
+- [*The Roman Space Telescope as a Planetary Defense Asset*](https://scixplorer.org/abs/2025PASP..137j5004H/abstract)\ B. J. Holler, et al. (includes **P. H. Bernardinelli**)  -- 2025, PASP, 137, 10, id.105004 (10 pp.)
 -   [*Predictions of the LSST Solar System Yield: Discovery Rates and Characterizations of Centaurs*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...98M/abstract)\
     J. Murtagh, M. E. Schwamb, S. R. Merritt, **P. H. Bernardinelli**, et al. -- AJ, 170, 2, 98 (18 pp.) 
 -   [*Monitoring of asteroids in cometary orbits and activated asteroids through archival images and new observations*](https://ui.adsabs.harvard.edu/abs/2025A%26A...698A.117M/abstract)\
@@ -64,8 +76,6 @@ permalink: /pubs/
     JJ Kavelaars, et al. (includes **P. H. Bernardinelli**) -- 2025, ApJS in review (20 pp.)  
 -   [*AI-enhanced Citizen Science Discovers Cometary Activity on Near-Earth Object (523822) 2012 DG61*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9....3C/abstract)\
     C. O. Chandler, et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 1, id.3 (2 pp.)
--   [*Dark Energy Survey Year 6 Results: Photometric Data Set for Cosmology*](https://ui.adsabs.harvard.edu/abs/2025arXiv250105739B/abstract)\
-   K. Bechtol, et al. (includes **P. H. Bernardinelli**) -- 2025 (27 pp.)
 -   [*The DECam Ecliptic Exploration Project (DEEP). VII. The Strengths of Three Superfast Rotating Main-belt Asteroids from a Preliminary Search of DEEP Data*](https://ui.adsabs.harvard.edu/abs/2024AJ....168..184S/abstract)\
     R. Strass, et al. (includes **P. H. Bernardinelli**) -- 2024, AJ, 168, 4, 184 (8 pp.)
 -   [*The Dark Energy Survey: Cosmology Results with ∼1500 New High-redshift Type Ia Supernovae Using the Full 5 yr Data Set*](https://ui.adsabs.harvard.edu/abs/2024ApJ...973L..14A/abstract)\
