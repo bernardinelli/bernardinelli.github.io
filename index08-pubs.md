@@ -66,7 +66,7 @@ S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**,
 A J. Fleming, et al. (includes **P. H. Bernardinelli**) -- 2025 (12 pp.) 
 - [*Recommendations for the Vera C. Rubin Observatory Early Science Schedule*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9..244S/abstract)\
 M. E. Schwamb, et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 9, 244
-- [*The Roman Space Telescope as a Planetary Defense Asset*](https://scixplorer.org/abs/2025PASP..137j5004H/abstract)\ 
+- [*The Roman Space Telescope as a Planetary Defense Asset*](https://scixplorer.org/abs/2025PASP..137j5004H/abstract)\
 B. J. Holler, et al. (includes **P. H. Bernardinelli**)  -- 2025, PASP, 137, 10, id.105004 (10 pp.)
 -   [*Predictions of the LSST Solar System Yield: Discovery Rates and Characterizations of Centaurs*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...98M/abstract)\
     J. Murtagh, M. E. Schwamb, S. R. Merritt, **P. H. Bernardinelli**, et al. -- AJ, 170, 2, 98 (18 pp.) 
