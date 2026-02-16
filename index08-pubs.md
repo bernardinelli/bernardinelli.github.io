@@ -16,7 +16,8 @@ permalink: /pubs/
   J. Murtagh, M. E. Schwamb, **P. H. Bernardinelli**, et al. -- 2026, AJ, 171, 2, 90 (21 pp.)
  -  [*An Efficient Shift-and-stack Algorithm Applied to Detection Catalogs*](https://scixplorer.org/abs/2025AJ....170..352S/abstract)\
  S. Stetzler, M. Jurić, **P. H. Bernardinelli**, et al. -- 2025, AJ, 170, 6, 352 (20 pp.)
--  [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://scixplorer.org/abs/2025JOSS...10.8145M/abstract)\  S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**, et al. -- 2025, JOSS, 10, 114, id. 8145 (6 pp.)
+-  [*Sorcha: A Solar System Survey Simulator for the Legacy Survey of Space and Time*](https://scixplorer.org/abs/2025JOSS...10.8145M/abstract)\
+S. R. Merritt, G. Fedorets, M. E. Scwhamb, S. Cornwall, **P. H. Bernardinelli**, et al. -- 2025, JOSS, 10, 114, id. 8145 (6 pp.)
 -   [*NSF-DOE Vera C. Rubin Observatory Observations of Interstellar Comet 3I/ATLAS (C/2025 N1)*](https://ui.adsabs.harvard.edu/abs/2025arXiv250713409C/abstract)\
     C. O. Chandler, **P. H. Bernardinelli**, M. Jurić, et al. -- 2025, arXiv
 -   [*Predictions of the LSST Solar System Yield: Near-Earth Objects, Main Belt Asteroids, Jupiter Trojans, and Trans-Neptunian Objects*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...99K/abstract)\
@@ -65,11 +66,12 @@ permalink: /pubs/
 A J. Fleming, et al. (includes **P. H. Bernardinelli**) -- 2025 (12 pp.) 
 - [*Recommendations for the Vera C. Rubin Observatory Early Science Schedule*](https://ui.adsabs.harvard.edu/abs/2025RNAAS...9..244S/abstract)\
 M. E. Schwamb, et al. (includes **P. H. Bernardinelli**) -- 2025, RNAAS, 9, 9, 244
-- [*The Roman Space Telescope as a Planetary Defense Asset*](https://scixplorer.org/abs/2025PASP..137j5004H/abstract)\ B. J. Holler, et al. (includes **P. H. Bernardinelli**)  -- 2025, PASP, 137, 10, id.105004 (10 pp.)
+- [*The Roman Space Telescope as a Planetary Defense Asset*](https://scixplorer.org/abs/2025PASP..137j5004H/abstract)\ 
+B. J. Holler, et al. (includes **P. H. Bernardinelli**)  -- 2025, PASP, 137, 10, id.105004 (10 pp.)
 -   [*Predictions of the LSST Solar System Yield: Discovery Rates and Characterizations of Centaurs*](https://ui.adsabs.harvard.edu/abs/2025AJ....170...98M/abstract)\
     J. Murtagh, M. E. Schwamb, S. R. Merritt, **P. H. Bernardinelli**, et al. -- AJ, 170, 2, 98 (18 pp.) 
 -   [*Monitoring of asteroids in cometary orbits and activated asteroids through archival images and new observations*](https://ui.adsabs.harvard.edu/abs/2025A%26A...698A.117M/abstract)\
-    S. Martino, et al. (includes **P. H. Bernardinelli**)  -- A\&A, 698, A117 (16 pp.) 
+    S. Martino, et al. (includes **P. H. Bernardinelli**)  -- A&A, 698, A117 (16 pp.) 
 -   [*Year six photometric measurements of known Trans-Neptunian Objects and Centaurs by the Dark Energy Survey*](https://ui.adsabs.harvard.edu/abs/2025MNRAS.tmp..621F/abstract)\
     F. S. Ferreira, et al. (includes **P. H. Bernardinelli**) -- 2025, MNRAS, 540, 1, pp. 460–482
 -   [*An Extremely Deep Rubin Survey to Explore the Extended Kuiper Belt and Identify Objects Observable by New Horizons*](https://ui.adsabs.harvard.edu/abs/2025arXiv250302765K/abstract)\
